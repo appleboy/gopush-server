@@ -41,7 +41,7 @@ func startWorker(ctx context.Context, wg *sync.WaitGroup, num int64) {
 func markFailedNotification(notification *PushNotification, reason string) {
 	LogError.Error(reason)
 	for _, token := range notification.Tokens {
-		notification.AddLog(getLogPushEntry(FailedPush, token, *notification, errors.New(reason)))
+		notification.AddLog(getLogPushEntry(FailedPush, token, *notification, errors.New(reason), reason))
 	}
 	notification.WaitDone()
 }

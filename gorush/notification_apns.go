@@ -399,17 +399,17 @@ Retry:
 					err = errors.New(res.Reason)
 				}
 				// apns server error
-				LogPush(FailedPush, token, req, err)
+				LogPush(FailedPush, token, req, err, res.Reason)
 
 				if PushConf.Core.Sync {
-					req.AddLog(getLogPushEntry(FailedPush, token, req, err))
+					req.AddLog(getLogPushEntry(FailedPush, token, req, err, res.Reason))
 				} else if PushConf.Core.FeedbackURL != "" {
 					go func(logger *logrus.Logger, log LogPushEntry, url string, timeout int64) {
 						err := DispatchFeedback(log, url, timeout)
 						if err != nil {
 							logger.Error(err)
 						}
-					}(LogError, getLogPushEntry(FailedPush, token, req, err), PushConf.Core.FeedbackURL, PushConf.Core.FeedbackTimeout)
+					}(LogError, getLogPushEntry(FailedPush, token, req, err, res.Reason), PushConf.Core.FeedbackURL, PushConf.Core.FeedbackTimeout)
 				}
 
 				StatStorage.AddIosError(1)
@@ -422,7 +422,7 @@ Retry:
 			}
 
 			if res.Sent() && !isError {
-				LogPush(SucceededPush, token, req, nil)
+				successLogPush(SucceededPush, token, req)
 				StatStorage.AddIosSuccess(1)
 			}
 			// free push slot

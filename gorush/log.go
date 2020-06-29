@@ -24,12 +24,13 @@ var (
 
 // LogPushEntry is push response log
 type LogPushEntry struct {
-	ID       string `json:"notif_id,omitempty"`
-	Type     string `json:"type"`
-	Platform string `json:"platform"`
-	Token    string `json:"token"`
-	Message  string `json:"message"`
-	Error    string `json:"error"`
+	ID                string `json:"notif_id,omitempty"`
+	Type              string `json:"type"`
+	Platform          string `json:"platform"`
+	Token             string `json:"token"`
+	Message           string `json:"message"`
+	Error             string `json:"error"`
+	ErrorResponseCode string `json:"error_response_code"`
 }
 
 var isTerm bool
@@ -156,7 +157,7 @@ func hideToken(token string, markLen int) string {
 	return result
 }
 
-func getLogPushEntry(status, token string, req PushNotification, errPush error) LogPushEntry {
+func getLogPushEntry(status, token string, req PushNotification, errPush error, errorResponseCode string) LogPushEntry {
 	var errMsg string
 
 	plat := typeForPlatForm(req.Platform)
@@ -170,17 +171,22 @@ func getLogPushEntry(status, token string, req PushNotification, errPush error) 
 	}
 
 	return LogPushEntry{
-		ID:       req.ID,
-		Type:     status,
-		Platform: plat,
-		Token:    token,
-		Message:  req.Message,
-		Error:    errMsg,
+		ID:                req.ID,
+		Type:              status,
+		Platform:          plat,
+		Token:             token,
+		Message:           req.Message,
+		Error:             errMsg,
+		ErrorResponseCode: errorResponseCode,
 	}
 }
 
+func successLogPush(status, token string, req PushNotification) {
+	LogPush(status, token, req, nil, "")
+}
+
 // LogPush record user push request and server response.
-func LogPush(status, token string, req PushNotification, errPush error) {
+func LogPush(status, token string, req PushNotification, errPush error, errorResponseCode string) {
 	var platColor, resetColor, output string
 
 	if isTerm {
@@ -188,7 +194,7 @@ func LogPush(status, token string, req PushNotification, errPush error) {
 		resetColor = reset
 	}
 
-	log := getLogPushEntry(status, token, req, errPush)
+	log := getLogPushEntry(status, token, req, errPush, errorResponseCode)
 
 	if PushConf.Log.Format == "json" {
 		logJSON, _ := json.Marshal(log)
@@ -213,12 +219,13 @@ func LogPush(status, token string, req PushNotification, errPush error) {
 				typeColor = red
 			}
 
-			output = fmt.Sprintf("|%s %s %s| %s%s%s [%s] | %s | Error Message: %s",
+			output = fmt.Sprintf("|%s %s %s| %s%s%s [%s] | %s | Error Message: %s | ErrorResponseCode: %s",
 				typeColor, log.Type, resetColor,
 				platColor, log.Platform, resetColor,
 				log.Token,
 				log.Message,
 				log.Error,
+				log.ErrorResponseCode,
 			)
 		}
 	}

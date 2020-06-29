@@ -832,26 +832,39 @@ See the following error format.
       "platform": "android",
       "token": "*******",
       "message": "Hello World Android!",
-      "error": "InvalidRegistration"
+      "error": "invalid registration token",
+      "error_response_code" : "InvalidRegistration"
     },
     {
       "type": "failed-push",
       "platform": "ios",
       "token": "*****",
       "message": "Hello World iOS1111!",
-      "error": "Post https://api.push.apple.com/3/device/bbbbb: remote error: tls: revoked certificate"
+      "error": "BadDeviceToken",
+      "error_response_code" : "BadDeviceToken"
     },
     {
       "type": "failed-push",
       "platform": "ios",
       "token": "*******",
       "message": "Hello World iOS222!",
-      "error": "Post https://api.push.apple.com/3/device/token_b: remote error: tls: revoked certificate"
+      "error": "MissingTopic",
+      "error_response_code" : "MissingTopic"
     }
   ],
   "success": "ok"
 }
 ```
+
+Properties of log
+
+| property            | value                                      |
+|---------------------|--------------------------------------------|
+| platform            | `ios` or `android`                         |
+| token               | device token                               |
+| message             | push notification message                  |
+| error               | error message                              |
+| error_response_code | returned error code from fcm/apns          |
 
 ## Run gRPC service
 

@@ -6,7 +6,7 @@ require (
 	github.com/apex/gateway v1.1.1
 	github.com/appleboy/com v0.0.2
 	github.com/appleboy/gin-status-api v1.1.0
-	github.com/appleboy/go-fcm v0.1.5
+	github.com/appleboy/go-fcm v0.1.6-0.20200603030924-e4c127519ac1
 	github.com/appleboy/gofight/v2 v2.1.2
 	github.com/asdine/storm/v3 v3.1.1
 	github.com/aws/aws-lambda-go v1.13.3 // indirect
