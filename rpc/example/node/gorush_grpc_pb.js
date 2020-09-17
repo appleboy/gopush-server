@@ -3,7 +3,7 @@
 'use strict';
 var grpc = require('grpc');
 var gorush_pb = require('./gorush_pb.js');
-var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
+var protobuf_ptypes_struct_struct_pb = require('./protobuf/ptypes/struct/struct_pb.js');
 
 function serialize_proto_HealthCheckRequest(arg) {
   if (!(arg instanceof gorush_pb.HealthCheckRequest)) {

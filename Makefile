@@ -11,7 +11,6 @@ ARCHS ?= amd64 386
 GOFILES := $(shell find . -name "*.go" -type f)
 TAGS ?= sqlite
 LDFLAGS ?= -X 'main.Version=$(VERSION)'
-NODE_PROTOC_PLUGIN := $(shell which grpc_tools_node_protoc_plugin)
 
 ifneq ($(shell uname), Darwin)
 	EXTLDFLAGS = -extldflags "-static" $(null)
@@ -144,13 +143,13 @@ clean:
 	-rm -rf release dist .cover
 
 rpc/example/node/gorush_*_pb.js: rpc/proto/gorush.proto
-	@hash grpc_tools_node_protoc_plugin > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
-		npm install -g grpc-tools; \
+	@test -s ./node_modules/.bin/grpc_tools_node_protoc_plugin > /dev/null 2>&1; if [ $$? -ne 0 ]; then \
+		npm install grpc-tools@1.8; \
 	fi
-	protoc -I rpc/proto rpc/proto/gorush.proto --js_out=import_style=commonjs,binary:rpc/example/node/ --grpc_out=rpc/example/node/ --plugin=protoc-gen-grpc=$(NODE_PROTOC_PLUGIN)
+	protoc -I vendor/github.com/golang -I rpc/proto rpc/proto/gorush.proto --js_out=import_style=commonjs,binary:rpc/example/node/ --grpc_out=rpc/example/node/ --plugin=protoc-gen-grpc=./node_modules/.bin/grpc_tools_node_protoc_plugin
 
 rpc/proto/gorush.pb.go: rpc/proto/gorush.proto
-	protoc -I rpc/proto rpc/proto/gorush.proto --go_out=plugins=grpc:rpc/proto
+	protoc -I vendor/github.com/golang -I rpc/proto rpc/proto/gorush.proto --go_out=plugins=grpc:rpc/proto
 
 generate_proto: rpc/proto/gorush.pb.go rpc/example/node/gorush_*_pb.js
 

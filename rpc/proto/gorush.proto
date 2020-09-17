@@ -1,5 +1,5 @@
 syntax = "proto3";
-import "google/protobuf/struct.proto";
+import "protobuf/ptypes/struct/struct.proto";
 
 package proto;
 
@@ -32,6 +32,7 @@ message NotificationRequest {
   bool mutableContent = 13;
   google.protobuf.Struct data = 14;
   string image = 15;
+  string priority = 16;
 }
 
 message NotificationReply {

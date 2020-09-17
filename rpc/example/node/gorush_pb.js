@@ -1,8 +1,6 @@
 /**
  * @fileoverview
  * @enhanceable
- * @suppress {messageConventions} JS Compiler reports an error if a variable or
- *     field starts with 'MSG_' and isn't a translatable message.
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
@@ -11,7 +9,7 @@ var jspb = require('google-protobuf');
 var goog = jspb;
 var global = Function('return this')();
 
-var google_protobuf_struct_pb = require('google-protobuf/google/protobuf/struct_pb.js');
+var protobuf_ptypes_struct_struct_pb = require('./protobuf/ptypes/struct/struct_pb.js');
 goog.exportSymbol('proto.proto.Alert', null, global);
 goog.exportSymbol('proto.proto.HealthCheckRequest', null, global);
 goog.exportSymbol('proto.proto.HealthCheckResponse', null, global);
@@ -68,20 +66,19 @@ proto.proto.Alert.prototype.toObject = function(opt_includeInstance) {
  *     http://goto/soy-param-migration
  * @param {!proto.proto.Alert} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.proto.Alert.toObject = function(includeInstance, msg) {
   var f, obj = {
-    title: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    body: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    subtitle: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    action: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    actionlockey: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    launchimage: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    lockey: jspb.Message.getFieldWithDefault(msg, 7, ""),
-    titlelockey: jspb.Message.getFieldWithDefault(msg, 8, ""),
-    locargsList: jspb.Message.getRepeatedField(msg, 9),
-    titlelocargsList: jspb.Message.getRepeatedField(msg, 10)
+    title: msg.getTitle(),
+    body: msg.getBody(),
+    subtitle: msg.getSubtitle(),
+    action: msg.getAction(),
+    actionlockey: msg.getActionlockey(),
+    launchimage: msg.getLaunchimage(),
+    lockey: msg.getLockey(),
+    titlelockey: msg.getTitlelockey(),
+    locargsList: jspb.Message.getField(msg, 9),
+    titlelocargsList: jspb.Message.getField(msg, 10)
   };
 
   if (includeInstance) {
@@ -152,11 +149,13 @@ proto.proto.Alert.deserializeBinaryFromReader = function(msg, reader) {
       break;
     case 9:
       var value = /** @type {string} */ (reader.readString());
-      msg.addLocargs(value);
+      msg.getLocargsList().push(value);
+      msg.setLocargsList(msg.getLocargsList());
       break;
     case 10:
       var value = /** @type {string} */ (reader.readString());
-      msg.addTitlelocargs(value);
+      msg.getTitlelocargsList().push(value);
+      msg.setTitlelocargsList(msg.getTitlelocargsList());
       break;
     default:
       reader.skipField();
@@ -168,89 +167,98 @@ proto.proto.Alert.deserializeBinaryFromReader = function(msg, reader) {
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.proto.Alert} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.proto.Alert.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.proto.Alert.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.proto.Alert.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.proto.Alert} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.proto.Alert.serializeBinaryToWriter = function(message, writer) {
+proto.proto.Alert.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getTitle();
+  f = this.getTitle();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getBody();
+  f = this.getBody();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getSubtitle();
+  f = this.getSubtitle();
   if (f.length > 0) {
     writer.writeString(
       3,
       f
     );
   }
-  f = message.getAction();
+  f = this.getAction();
   if (f.length > 0) {
     writer.writeString(
       4,
       f
     );
   }
-  f = message.getActionlockey();
+  f = this.getActionlockey();
   if (f.length > 0) {
     writer.writeString(
       5,
       f
     );
   }
-  f = message.getLaunchimage();
+  f = this.getLaunchimage();
   if (f.length > 0) {
     writer.writeString(
       6,
       f
     );
   }
-  f = message.getLockey();
+  f = this.getLockey();
   if (f.length > 0) {
     writer.writeString(
       7,
       f
     );
   }
-  f = message.getTitlelockey();
+  f = this.getTitlelockey();
   if (f.length > 0) {
     writer.writeString(
       8,
       f
     );
   }
-  f = message.getLocargsList();
+  f = this.getLocargsList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       9,
       f
     );
   }
-  f = message.getTitlelocargsList();
+  f = this.getTitlelocargsList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       10,
@@ -261,17 +269,26 @@ proto.proto.Alert.serializeBinaryToWriter = function(message, writer) {
 
 
 /**
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.proto.Alert} The clone.
+ */
+proto.proto.Alert.prototype.cloneMessage = function() {
+  return /** @type {!proto.proto.Alert} */ (jspb.Message.cloneMessage(this));
+};
+
+
+/**
  * optional string title = 1;
  * @return {string}
  */
 proto.proto.Alert.prototype.getTitle = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 1, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.Alert.prototype.setTitle = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -280,13 +297,13 @@ proto.proto.Alert.prototype.setTitle = function(value) {
  * @return {string}
  */
 proto.proto.Alert.prototype.getBody = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 2, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.Alert.prototype.setBody = function(value) {
-  jspb.Message.setProto3StringField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -295,13 +312,13 @@ proto.proto.Alert.prototype.setBody = function(value) {
  * @return {string}
  */
 proto.proto.Alert.prototype.getSubtitle = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 3, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.Alert.prototype.setSubtitle = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  jspb.Message.setField(this, 3, value);
 };
 
 
@@ -310,13 +327,13 @@ proto.proto.Alert.prototype.setSubtitle = function(value) {
  * @return {string}
  */
 proto.proto.Alert.prototype.getAction = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 4, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.Alert.prototype.setAction = function(value) {
-  jspb.Message.setProto3StringField(this, 4, value);
+  jspb.Message.setField(this, 4, value);
 };
 
 
@@ -325,13 +342,13 @@ proto.proto.Alert.prototype.setAction = function(value) {
  * @return {string}
  */
 proto.proto.Alert.prototype.getActionlockey = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 5, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.Alert.prototype.setActionlockey = function(value) {
-  jspb.Message.setProto3StringField(this, 5, value);
+  jspb.Message.setField(this, 5, value);
 };
 
 
@@ -340,13 +357,13 @@ proto.proto.Alert.prototype.setActionlockey = function(value) {
  * @return {string}
  */
 proto.proto.Alert.prototype.getLaunchimage = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 6, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.Alert.prototype.setLaunchimage = function(value) {
-  jspb.Message.setProto3StringField(this, 6, value);
+  jspb.Message.setField(this, 6, value);
 };
 
 
@@ -355,13 +372,13 @@ proto.proto.Alert.prototype.setLaunchimage = function(value) {
  * @return {string}
  */
 proto.proto.Alert.prototype.getLockey = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 7, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 7, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.Alert.prototype.setLockey = function(value) {
-  jspb.Message.setProto3StringField(this, 7, value);
+  jspb.Message.setField(this, 7, value);
 };
 
 
@@ -370,71 +387,57 @@ proto.proto.Alert.prototype.setLockey = function(value) {
  * @return {string}
  */
 proto.proto.Alert.prototype.getTitlelockey = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 8, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.Alert.prototype.setTitlelockey = function(value) {
-  jspb.Message.setProto3StringField(this, 8, value);
+  jspb.Message.setField(this, 8, value);
 };
 
 
 /**
  * repeated string locArgs = 9;
- * @return {!Array<string>}
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
+ * @return {!Array.<string>}
  */
 proto.proto.Alert.prototype.getLocargsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 9));
+  return /** @type {!Array.<string>} */ (jspb.Message.getField(this, 9));
 };
 
 
-/** @param {!Array<string>} value */
+/** @param {Array.<string>} value  */
 proto.proto.Alert.prototype.setLocargsList = function(value) {
   jspb.Message.setField(this, 9, value || []);
 };
 
 
-/**
- * @param {!string} value
- * @param {number=} opt_index
- */
-proto.proto.Alert.prototype.addLocargs = function(value, opt_index) {
-  jspb.Message.addToRepeatedField(this, 9, value, opt_index);
-};
-
-
 proto.proto.Alert.prototype.clearLocargsList = function() {
-  this.setLocargsList([]);
+  jspb.Message.setField(this, 9, []);
 };
 
 
 /**
  * repeated string titleLocArgs = 10;
- * @return {!Array<string>}
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
+ * @return {!Array.<string>}
  */
 proto.proto.Alert.prototype.getTitlelocargsList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 10));
+  return /** @type {!Array.<string>} */ (jspb.Message.getField(this, 10));
 };
 
 
-/** @param {!Array<string>} value */
+/** @param {Array.<string>} value  */
 proto.proto.Alert.prototype.setTitlelocargsList = function(value) {
   jspb.Message.setField(this, 10, value || []);
 };
 
 
-/**
- * @param {!string} value
- * @param {number=} opt_index
- */
-proto.proto.Alert.prototype.addTitlelocargs = function(value, opt_index) {
-  jspb.Message.addToRepeatedField(this, 10, value, opt_index);
-};
-
-
 proto.proto.Alert.prototype.clearTitlelocargsList = function() {
-  this.setTitlelocargsList([]);
+  jspb.Message.setField(this, 10, []);
 };
 
 
@@ -488,25 +491,25 @@ proto.proto.NotificationRequest.prototype.toObject = function(opt_includeInstanc
  *     http://goto/soy-param-migration
  * @param {!proto.proto.NotificationRequest} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.proto.NotificationRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    tokensList: jspb.Message.getRepeatedField(msg, 1),
-    platform: jspb.Message.getFieldWithDefault(msg, 2, 0),
-    message: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    title: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    topic: jspb.Message.getFieldWithDefault(msg, 5, ""),
-    key: jspb.Message.getFieldWithDefault(msg, 6, ""),
-    badge: jspb.Message.getFieldWithDefault(msg, 7, 0),
-    category: jspb.Message.getFieldWithDefault(msg, 8, ""),
+    tokensList: jspb.Message.getField(msg, 1),
+    platform: msg.getPlatform(),
+    message: msg.getMessage(),
+    title: msg.getTitle(),
+    topic: msg.getTopic(),
+    key: msg.getKey(),
+    badge: msg.getBadge(),
+    category: msg.getCategory(),
     alert: (f = msg.getAlert()) && proto.proto.Alert.toObject(includeInstance, f),
-    sound: jspb.Message.getFieldWithDefault(msg, 10, ""),
-    contentavailable: jspb.Message.getFieldWithDefault(msg, 11, false),
-    threadid: jspb.Message.getFieldWithDefault(msg, 12, ""),
-    mutablecontent: jspb.Message.getFieldWithDefault(msg, 13, false),
-    data: (f = msg.getData()) && google_protobuf_struct_pb.Struct.toObject(includeInstance, f),
-    image: jspb.Message.getFieldWithDefault(msg, 15, "")
+    sound: msg.getSound(),
+    contentavailable: msg.getContentavailable(),
+    threadid: msg.getThreadid(),
+    mutablecontent: msg.getMutablecontent(),
+    data: (f = msg.getData()) && protobuf_ptypes_struct_struct_pb.Struct.toObject(includeInstance, f),
+    image: msg.getImage(),
+    priority: msg.getPriority()
   };
 
   if (includeInstance) {
@@ -545,7 +548,8 @@ proto.proto.NotificationRequest.deserializeBinaryFromReader = function(msg, read
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.addTokens(value);
+      msg.getTokensList().push(value);
+      msg.setTokensList(msg.getTokensList());
       break;
     case 2:
       var value = /** @type {number} */ (reader.readInt32());
@@ -597,13 +601,17 @@ proto.proto.NotificationRequest.deserializeBinaryFromReader = function(msg, read
       msg.setMutablecontent(value);
       break;
     case 14:
-      var value = new google_protobuf_struct_pb.Struct;
-      reader.readMessage(value,google_protobuf_struct_pb.Struct.deserializeBinaryFromReader);
+      var value = new protobuf_ptypes_struct_struct_pb.Struct;
+      reader.readMessage(value,protobuf_ptypes_struct_struct_pb.Struct.deserializeBinaryFromReader);
       msg.setData(value);
       break;
     case 15:
       var value = /** @type {string} */ (reader.readString());
       msg.setImage(value);
+      break;
+    case 16:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setPriority(value);
       break;
     default:
       reader.skipField();
@@ -615,82 +623,91 @@ proto.proto.NotificationRequest.deserializeBinaryFromReader = function(msg, read
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.proto.NotificationRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.proto.NotificationRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.proto.NotificationRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.proto.NotificationRequest.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.proto.NotificationRequest} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.proto.NotificationRequest.serializeBinaryToWriter = function(message, writer) {
+proto.proto.NotificationRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getTokensList();
+  f = this.getTokensList();
   if (f.length > 0) {
     writer.writeRepeatedString(
       1,
       f
     );
   }
-  f = message.getPlatform();
+  f = this.getPlatform();
   if (f !== 0) {
     writer.writeInt32(
       2,
       f
     );
   }
-  f = message.getMessage();
+  f = this.getMessage();
   if (f.length > 0) {
     writer.writeString(
       3,
       f
     );
   }
-  f = message.getTitle();
+  f = this.getTitle();
   if (f.length > 0) {
     writer.writeString(
       4,
       f
     );
   }
-  f = message.getTopic();
+  f = this.getTopic();
   if (f.length > 0) {
     writer.writeString(
       5,
       f
     );
   }
-  f = message.getKey();
+  f = this.getKey();
   if (f.length > 0) {
     writer.writeString(
       6,
       f
     );
   }
-  f = message.getBadge();
+  f = this.getBadge();
   if (f !== 0) {
     writer.writeInt32(
       7,
       f
     );
   }
-  f = message.getCategory();
+  f = this.getCategory();
   if (f.length > 0) {
     writer.writeString(
       8,
       f
     );
   }
-  f = message.getAlert();
+  f = this.getAlert();
   if (f != null) {
     writer.writeMessage(
       9,
@@ -698,46 +715,53 @@ proto.proto.NotificationRequest.serializeBinaryToWriter = function(message, writ
       proto.proto.Alert.serializeBinaryToWriter
     );
   }
-  f = message.getSound();
+  f = this.getSound();
   if (f.length > 0) {
     writer.writeString(
       10,
       f
     );
   }
-  f = message.getContentavailable();
+  f = this.getContentavailable();
   if (f) {
     writer.writeBool(
       11,
       f
     );
   }
-  f = message.getThreadid();
+  f = this.getThreadid();
   if (f.length > 0) {
     writer.writeString(
       12,
       f
     );
   }
-  f = message.getMutablecontent();
+  f = this.getMutablecontent();
   if (f) {
     writer.writeBool(
       13,
       f
     );
   }
-  f = message.getData();
+  f = this.getData();
   if (f != null) {
     writer.writeMessage(
       14,
       f,
-      google_protobuf_struct_pb.Struct.serializeBinaryToWriter
+      protobuf_ptypes_struct_struct_pb.Struct.serializeBinaryToWriter
     );
   }
-  f = message.getImage();
+  f = this.getImage();
   if (f.length > 0) {
     writer.writeString(
       15,
+      f
+    );
+  }
+  f = this.getPriority();
+  if (f.length > 0) {
+    writer.writeString(
+      16,
       f
     );
   }
@@ -745,31 +769,33 @@ proto.proto.NotificationRequest.serializeBinaryToWriter = function(message, writ
 
 
 /**
- * repeated string tokens = 1;
- * @return {!Array<string>}
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.proto.NotificationRequest} The clone.
  */
-proto.proto.NotificationRequest.prototype.getTokensList = function() {
-  return /** @type {!Array<string>} */ (jspb.Message.getRepeatedField(this, 1));
+proto.proto.NotificationRequest.prototype.cloneMessage = function() {
+  return /** @type {!proto.proto.NotificationRequest} */ (jspb.Message.cloneMessage(this));
 };
 
 
-/** @param {!Array<string>} value */
+/**
+ * repeated string tokens = 1;
+ * If you change this array by adding, removing or replacing elements, or if you
+ * replace the array itself, then you must call the setter to update it.
+ * @return {!Array.<string>}
+ */
+proto.proto.NotificationRequest.prototype.getTokensList = function() {
+  return /** @type {!Array.<string>} */ (jspb.Message.getField(this, 1));
+};
+
+
+/** @param {Array.<string>} value  */
 proto.proto.NotificationRequest.prototype.setTokensList = function(value) {
   jspb.Message.setField(this, 1, value || []);
 };
 
 
-/**
- * @param {!string} value
- * @param {number=} opt_index
- */
-proto.proto.NotificationRequest.prototype.addTokens = function(value, opt_index) {
-  jspb.Message.addToRepeatedField(this, 1, value, opt_index);
-};
-
-
 proto.proto.NotificationRequest.prototype.clearTokensList = function() {
-  this.setTokensList([]);
+  jspb.Message.setField(this, 1, []);
 };
 
 
@@ -778,13 +804,13 @@ proto.proto.NotificationRequest.prototype.clearTokensList = function() {
  * @return {number}
  */
 proto.proto.NotificationRequest.prototype.getPlatform = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 2, 0));
 };
 
 
-/** @param {number} value */
+/** @param {number} value  */
 proto.proto.NotificationRequest.prototype.setPlatform = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -793,13 +819,13 @@ proto.proto.NotificationRequest.prototype.setPlatform = function(value) {
  * @return {string}
  */
 proto.proto.NotificationRequest.prototype.getMessage = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 3, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.NotificationRequest.prototype.setMessage = function(value) {
-  jspb.Message.setProto3StringField(this, 3, value);
+  jspb.Message.setField(this, 3, value);
 };
 
 
@@ -808,13 +834,13 @@ proto.proto.NotificationRequest.prototype.setMessage = function(value) {
  * @return {string}
  */
 proto.proto.NotificationRequest.prototype.getTitle = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 4, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.NotificationRequest.prototype.setTitle = function(value) {
-  jspb.Message.setProto3StringField(this, 4, value);
+  jspb.Message.setField(this, 4, value);
 };
 
 
@@ -823,13 +849,13 @@ proto.proto.NotificationRequest.prototype.setTitle = function(value) {
  * @return {string}
  */
 proto.proto.NotificationRequest.prototype.getTopic = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 5, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.NotificationRequest.prototype.setTopic = function(value) {
-  jspb.Message.setProto3StringField(this, 5, value);
+  jspb.Message.setField(this, 5, value);
 };
 
 
@@ -838,13 +864,13 @@ proto.proto.NotificationRequest.prototype.setTopic = function(value) {
  * @return {string}
  */
 proto.proto.NotificationRequest.prototype.getKey = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 6, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 6, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.NotificationRequest.prototype.setKey = function(value) {
-  jspb.Message.setProto3StringField(this, 6, value);
+  jspb.Message.setField(this, 6, value);
 };
 
 
@@ -853,13 +879,13 @@ proto.proto.NotificationRequest.prototype.setKey = function(value) {
  * @return {number}
  */
 proto.proto.NotificationRequest.prototype.getBadge = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 7, 0));
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 7, 0));
 };
 
 
-/** @param {number} value */
+/** @param {number} value  */
 proto.proto.NotificationRequest.prototype.setBadge = function(value) {
-  jspb.Message.setProto3IntField(this, 7, value);
+  jspb.Message.setField(this, 7, value);
 };
 
 
@@ -868,27 +894,27 @@ proto.proto.NotificationRequest.prototype.setBadge = function(value) {
  * @return {string}
  */
 proto.proto.NotificationRequest.prototype.getCategory = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 8, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 8, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.NotificationRequest.prototype.setCategory = function(value) {
-  jspb.Message.setProto3StringField(this, 8, value);
+  jspb.Message.setField(this, 8, value);
 };
 
 
 /**
  * optional Alert alert = 9;
- * @return {?proto.proto.Alert}
+ * @return {proto.proto.Alert}
  */
 proto.proto.NotificationRequest.prototype.getAlert = function() {
-  return /** @type{?proto.proto.Alert} */ (
+  return /** @type{proto.proto.Alert} */ (
     jspb.Message.getWrapperField(this, proto.proto.Alert, 9));
 };
 
 
-/** @param {?proto.proto.Alert|undefined} value */
+/** @param {proto.proto.Alert|undefined} value  */
 proto.proto.NotificationRequest.prototype.setAlert = function(value) {
   jspb.Message.setWrapperField(this, 9, value);
 };
@@ -901,7 +927,7 @@ proto.proto.NotificationRequest.prototype.clearAlert = function() {
 
 /**
  * Returns whether this field is set.
- * @return {!boolean}
+ * @return{!boolean}
  */
 proto.proto.NotificationRequest.prototype.hasAlert = function() {
   return jspb.Message.getField(this, 9) != null;
@@ -913,13 +939,13 @@ proto.proto.NotificationRequest.prototype.hasAlert = function() {
  * @return {string}
  */
 proto.proto.NotificationRequest.prototype.getSound = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 10, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 10, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.NotificationRequest.prototype.setSound = function(value) {
-  jspb.Message.setProto3StringField(this, 10, value);
+  jspb.Message.setField(this, 10, value);
 };
 
 
@@ -930,13 +956,13 @@ proto.proto.NotificationRequest.prototype.setSound = function(value) {
  * @return {boolean}
  */
 proto.proto.NotificationRequest.prototype.getContentavailable = function() {
-  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 11, false));
+  return /** @type {boolean} */ (jspb.Message.getFieldProto3(this, 11, false));
 };
 
 
-/** @param {boolean} value */
+/** @param {boolean} value  */
 proto.proto.NotificationRequest.prototype.setContentavailable = function(value) {
-  jspb.Message.setProto3BooleanField(this, 11, value);
+  jspb.Message.setField(this, 11, value);
 };
 
 
@@ -945,13 +971,13 @@ proto.proto.NotificationRequest.prototype.setContentavailable = function(value) 
  * @return {string}
  */
 proto.proto.NotificationRequest.prototype.getThreadid = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 12, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 12, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.NotificationRequest.prototype.setThreadid = function(value) {
-  jspb.Message.setProto3StringField(this, 12, value);
+  jspb.Message.setField(this, 12, value);
 };
 
 
@@ -962,27 +988,27 @@ proto.proto.NotificationRequest.prototype.setThreadid = function(value) {
  * @return {boolean}
  */
 proto.proto.NotificationRequest.prototype.getMutablecontent = function() {
-  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 13, false));
+  return /** @type {boolean} */ (jspb.Message.getFieldProto3(this, 13, false));
 };
 
 
-/** @param {boolean} value */
+/** @param {boolean} value  */
 proto.proto.NotificationRequest.prototype.setMutablecontent = function(value) {
-  jspb.Message.setProto3BooleanField(this, 13, value);
+  jspb.Message.setField(this, 13, value);
 };
 
 
 /**
  * optional google.protobuf.Struct data = 14;
- * @return {?proto.google.protobuf.Struct}
+ * @return {proto.google.protobuf.Struct}
  */
 proto.proto.NotificationRequest.prototype.getData = function() {
-  return /** @type{?proto.google.protobuf.Struct} */ (
-    jspb.Message.getWrapperField(this, google_protobuf_struct_pb.Struct, 14));
+  return /** @type{proto.google.protobuf.Struct} */ (
+    jspb.Message.getWrapperField(this, protobuf_ptypes_struct_struct_pb.Struct, 14));
 };
 
 
-/** @param {?proto.google.protobuf.Struct|undefined} value */
+/** @param {proto.google.protobuf.Struct|undefined} value  */
 proto.proto.NotificationRequest.prototype.setData = function(value) {
   jspb.Message.setWrapperField(this, 14, value);
 };
@@ -995,7 +1021,7 @@ proto.proto.NotificationRequest.prototype.clearData = function() {
 
 /**
  * Returns whether this field is set.
- * @return {!boolean}
+ * @return{!boolean}
  */
 proto.proto.NotificationRequest.prototype.hasData = function() {
   return jspb.Message.getField(this, 14) != null;
@@ -1007,13 +1033,28 @@ proto.proto.NotificationRequest.prototype.hasData = function() {
  * @return {string}
  */
 proto.proto.NotificationRequest.prototype.getImage = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 15, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 15, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.NotificationRequest.prototype.setImage = function(value) {
-  jspb.Message.setProto3StringField(this, 15, value);
+  jspb.Message.setField(this, 15, value);
+};
+
+
+/**
+ * optional string priority = 16;
+ * @return {string}
+ */
+proto.proto.NotificationRequest.prototype.getPriority = function() {
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 16, ""));
+};
+
+
+/** @param {string} value  */
+proto.proto.NotificationRequest.prototype.setPriority = function(value) {
+  jspb.Message.setField(this, 16, value);
 };
 
 
@@ -1060,12 +1101,11 @@ proto.proto.NotificationReply.prototype.toObject = function(opt_includeInstance)
  *     http://goto/soy-param-migration
  * @param {!proto.proto.NotificationReply} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.proto.NotificationReply.toObject = function(includeInstance, msg) {
   var f, obj = {
-    success: jspb.Message.getFieldWithDefault(msg, 1, false),
-    counts: jspb.Message.getFieldWithDefault(msg, 2, 0)
+    success: msg.getSuccess(),
+    counts: msg.getCounts()
   };
 
   if (includeInstance) {
@@ -1120,33 +1160,42 @@ proto.proto.NotificationReply.deserializeBinaryFromReader = function(msg, reader
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.proto.NotificationReply} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.proto.NotificationReply.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.proto.NotificationReply.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.proto.NotificationReply.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.proto.NotificationReply} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.proto.NotificationReply.serializeBinaryToWriter = function(message, writer) {
+proto.proto.NotificationReply.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getSuccess();
+  f = this.getSuccess();
   if (f) {
     writer.writeBool(
       1,
       f
     );
   }
-  f = message.getCounts();
+  f = this.getCounts();
   if (f !== 0) {
     writer.writeInt32(
       2,
@@ -1157,19 +1206,28 @@ proto.proto.NotificationReply.serializeBinaryToWriter = function(message, writer
 
 
 /**
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.proto.NotificationReply} The clone.
+ */
+proto.proto.NotificationReply.prototype.cloneMessage = function() {
+  return /** @type {!proto.proto.NotificationReply} */ (jspb.Message.cloneMessage(this));
+};
+
+
+/**
  * optional bool success = 1;
  * Note that Boolean fields may be set to 0/1 when serialized from a Java server.
  * You should avoid comparisons like {@code val === true/false} in those cases.
  * @return {boolean}
  */
 proto.proto.NotificationReply.prototype.getSuccess = function() {
-  return /** @type {boolean} */ (jspb.Message.getFieldWithDefault(this, 1, false));
+  return /** @type {boolean} */ (jspb.Message.getFieldProto3(this, 1, false));
 };
 
 
-/** @param {boolean} value */
+/** @param {boolean} value  */
 proto.proto.NotificationReply.prototype.setSuccess = function(value) {
-  jspb.Message.setProto3BooleanField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -1178,13 +1236,13 @@ proto.proto.NotificationReply.prototype.setSuccess = function(value) {
  * @return {number}
  */
 proto.proto.NotificationReply.prototype.getCounts = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 2, 0));
+  return /** @type {number} */ (jspb.Message.getFieldProto3(this, 2, 0));
 };
 
 
-/** @param {number} value */
+/** @param {number} value  */
 proto.proto.NotificationReply.prototype.setCounts = function(value) {
-  jspb.Message.setProto3IntField(this, 2, value);
+  jspb.Message.setField(this, 2, value);
 };
 
 
@@ -1231,11 +1289,10 @@ proto.proto.HealthCheckRequest.prototype.toObject = function(opt_includeInstance
  *     http://goto/soy-param-migration
  * @param {!proto.proto.HealthCheckRequest} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.proto.HealthCheckRequest.toObject = function(includeInstance, msg) {
   var f, obj = {
-    service: jspb.Message.getFieldWithDefault(msg, 1, "")
+    service: msg.getService()
   };
 
   if (includeInstance) {
@@ -1286,26 +1343,35 @@ proto.proto.HealthCheckRequest.deserializeBinaryFromReader = function(msg, reade
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.proto.HealthCheckRequest} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.proto.HealthCheckRequest.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.proto.HealthCheckRequest.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.proto.HealthCheckRequest.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.proto.HealthCheckRequest} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.proto.HealthCheckRequest.serializeBinaryToWriter = function(message, writer) {
+proto.proto.HealthCheckRequest.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getService();
+  f = this.getService();
   if (f.length > 0) {
     writer.writeString(
       1,
@@ -1316,17 +1382,26 @@ proto.proto.HealthCheckRequest.serializeBinaryToWriter = function(message, write
 
 
 /**
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.proto.HealthCheckRequest} The clone.
+ */
+proto.proto.HealthCheckRequest.prototype.cloneMessage = function() {
+  return /** @type {!proto.proto.HealthCheckRequest} */ (jspb.Message.cloneMessage(this));
+};
+
+
+/**
  * optional string service = 1;
  * @return {string}
  */
 proto.proto.HealthCheckRequest.prototype.getService = function() {
-  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
+  return /** @type {string} */ (jspb.Message.getFieldProto3(this, 1, ""));
 };
 
 
-/** @param {string} value */
+/** @param {string} value  */
 proto.proto.HealthCheckRequest.prototype.setService = function(value) {
-  jspb.Message.setProto3StringField(this, 1, value);
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -1373,11 +1448,10 @@ proto.proto.HealthCheckResponse.prototype.toObject = function(opt_includeInstanc
  *     http://goto/soy-param-migration
  * @param {!proto.proto.HealthCheckResponse} msg The msg instance to transform.
  * @return {!Object}
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
 proto.proto.HealthCheckResponse.toObject = function(includeInstance, msg) {
   var f, obj = {
-    status: jspb.Message.getFieldWithDefault(msg, 1, 0)
+    status: msg.getStatus()
   };
 
   if (includeInstance) {
@@ -1428,32 +1502,65 @@ proto.proto.HealthCheckResponse.deserializeBinaryFromReader = function(msg, read
 
 
 /**
+ * Class method variant: serializes the given message to binary data
+ * (in protobuf wire format), writing to the given BinaryWriter.
+ * @param {!proto.proto.HealthCheckResponse} message
+ * @param {!jspb.BinaryWriter} writer
+ */
+proto.proto.HealthCheckResponse.serializeBinaryToWriter = function(message, writer) {
+  message.serializeBinaryToWriter(writer);
+};
+
+
+/**
  * Serializes the message to binary data (in protobuf wire format).
  * @return {!Uint8Array}
  */
 proto.proto.HealthCheckResponse.prototype.serializeBinary = function() {
   var writer = new jspb.BinaryWriter();
-  proto.proto.HealthCheckResponse.serializeBinaryToWriter(this, writer);
+  this.serializeBinaryToWriter(writer);
   return writer.getResultBuffer();
 };
 
 
 /**
- * Serializes the given message to binary data (in protobuf wire
- * format), writing to the given BinaryWriter.
- * @param {!proto.proto.HealthCheckResponse} message
+ * Serializes the message to binary data (in protobuf wire format),
+ * writing to the given BinaryWriter.
  * @param {!jspb.BinaryWriter} writer
- * @suppress {unusedLocalVariables} f is only used for nested messages
  */
-proto.proto.HealthCheckResponse.serializeBinaryToWriter = function(message, writer) {
+proto.proto.HealthCheckResponse.prototype.serializeBinaryToWriter = function (writer) {
   var f = undefined;
-  f = message.getStatus();
+  f = this.getStatus();
   if (f !== 0.0) {
     writer.writeEnum(
       1,
       f
     );
   }
+};
+
+
+/**
+ * Creates a deep clone of this proto. No data is shared with the original.
+ * @return {!proto.proto.HealthCheckResponse} The clone.
+ */
+proto.proto.HealthCheckResponse.prototype.cloneMessage = function() {
+  return /** @type {!proto.proto.HealthCheckResponse} */ (jspb.Message.cloneMessage(this));
+};
+
+
+/**
+ * optional ServingStatus status = 1;
+ * @return {!proto.proto.HealthCheckResponse.ServingStatus}
+ */
+proto.proto.HealthCheckResponse.prototype.getStatus = function() {
+  return /** @type {!proto.proto.HealthCheckResponse.ServingStatus} */ (jspb.Message.getFieldProto3(this, 1, 0));
+};
+
+
+/** @param {!proto.proto.HealthCheckResponse.ServingStatus} value  */
+proto.proto.HealthCheckResponse.prototype.setStatus = function(value) {
+  jspb.Message.setField(this, 1, value);
 };
 
 
@@ -1465,20 +1572,5 @@ proto.proto.HealthCheckResponse.ServingStatus = {
   SERVING: 1,
   NOT_SERVING: 2
 };
-
-/**
- * optional ServingStatus status = 1;
- * @return {!proto.proto.HealthCheckResponse.ServingStatus}
- */
-proto.proto.HealthCheckResponse.prototype.getStatus = function() {
-  return /** @type {!proto.proto.HealthCheckResponse.ServingStatus} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
-};
-
-
-/** @param {!proto.proto.HealthCheckResponse.ServingStatus} value */
-proto.proto.HealthCheckResponse.prototype.setStatus = function(value) {
-  jspb.Message.setProto3EnumField(this, 1, value);
-};
-
 
 goog.object.extend(exports, proto.proto);
