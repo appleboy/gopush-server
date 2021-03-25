@@ -14,12 +14,18 @@ see the JSON format:
 {
   "notifications": [
     {
-      "tokens": ["token_a", "token_b"],
+      "tokens": [
+        "token_a",
+        "token_b"
+      ],
       "platform": 1,
       "message": "Hello World iOS!"
     },
     {
-      "tokens": ["token_a", "token_b"],
+      "tokens": [
+        "token_a",
+        "token_b"
+      ],
       "platform": 2,
       "message": "Hello World Android!"
     }

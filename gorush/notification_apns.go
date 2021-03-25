@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/appleboy/gorush/config"
 	"github.com/mitchellh/mapstructure"
 	"github.com/sideshow/apns2"
 	"github.com/sideshow/apns2/certificate"
@@ -46,23 +47,23 @@ type Sound struct {
 }
 
 // InitAPNSClient use for initialize APNs Client.
-func InitAPNSClient() error {
-	if PushConf.Ios.Enabled {
+func InitAPNSClient(tenantId string, tenant config.SectionTenant) error {
+	if tenant.Ios.Enabled {
 		var err error
 		var authKey *ecdsa.PrivateKey
 		var certificateKey tls.Certificate
 		var ext string
 
-		if PushConf.Ios.KeyPath != "" {
-			ext = filepath.Ext(PushConf.Ios.KeyPath)
+		if tenant.Ios.KeyPath != "" {
+			ext = filepath.Ext(tenant.Ios.KeyPath)
 
 			switch ext {
 			case ".p12":
-				certificateKey, err = certificate.FromP12File(PushConf.Ios.KeyPath, PushConf.Ios.Password)
+				certificateKey, err = certificate.FromP12File(tenant.Ios.KeyPath, tenant.Ios.Password)
 			case ".pem":
-				certificateKey, err = certificate.FromPemFile(PushConf.Ios.KeyPath, PushConf.Ios.Password)
+				certificateKey, err = certificate.FromPemFile(tenant.Ios.KeyPath, tenant.Ios.Password)
 			case ".p8":
-				authKey, err = token.AuthKeyFromFile(PushConf.Ios.KeyPath)
+				authKey, err = token.AuthKeyFromFile(tenant.Ios.KeyPath)
 			default:
 				err = errors.New("wrong certificate key extension")
 			}
@@ -72,9 +73,9 @@ func InitAPNSClient() error {
 
 				return err
 			}
-		} else if PushConf.Ios.KeyBase64 != "" {
-			ext = "." + PushConf.Ios.KeyType
-			key, err := base64.StdEncoding.DecodeString(PushConf.Ios.KeyBase64)
+		} else if tenant.Ios.KeyBase64 != "" {
+			ext = "." + tenant.Ios.KeyType
+			key, err := base64.StdEncoding.DecodeString(tenant.Ios.KeyBase64)
 			if err != nil {
 				LogError.Error("base64 decode error:", err.Error())
 
@@ -82,9 +83,9 @@ func InitAPNSClient() error {
 			}
 			switch ext {
 			case ".p12":
-				certificateKey, err = certificate.FromP12Bytes(key, PushConf.Ios.Password)
+				certificateKey, err = certificate.FromP12Bytes(key, tenant.Ios.Password)
 			case ".pem":
-				certificateKey, err = certificate.FromPemBytes(key, PushConf.Ios.Password)
+				certificateKey, err = certificate.FromPemBytes(key, tenant.Ios.Password)
 			case ".p8":
 				authKey, err = token.AuthKeyFromBytes(key)
 			default:
@@ -99,22 +100,22 @@ func InitAPNSClient() error {
 		}
 
 		if ext == ".p8" {
-			if PushConf.Ios.KeyID == "" || PushConf.Ios.TeamID == "" {
+			if tenant.Ios.KeyID == "" || tenant.Ios.TeamID == "" {
 				msg := "You should provide ios.KeyID and ios.TeamID for P8 token"
 				LogError.Error(msg)
 				return errors.New(msg)
 			}
-			token := &token.Token{
+			jwt := &token.Token{
 				AuthKey: authKey,
 				// KeyID from developer account (Certificates, Identifiers & Profiles -> Keys)
-				KeyID: PushConf.Ios.KeyID,
+				KeyID: tenant.Ios.KeyID,
 				// TeamID from developer account (View Account -> Membership)
-				TeamID: PushConf.Ios.TeamID,
+				TeamID: tenant.Ios.TeamID,
 			}
 
-			ApnsClient, err = newApnsTokenClient(token)
+			ApnsClients[tenantId], err = newApnsTokenClient(jwt, tenant.Ios.Production)
 		} else {
-			ApnsClient, err = newApnsClient(certificateKey)
+			ApnsClients[tenantId], err = newApnsClient(certificateKey, tenant.Ios.Production)
 		}
 
 		if err != nil {
@@ -127,10 +128,10 @@ func InitAPNSClient() error {
 	return nil
 }
 
-func newApnsClient(certificate tls.Certificate) (*apns2.Client, error) {
+func newApnsClient(certificate tls.Certificate, isProduction bool) (*apns2.Client, error) {
 	var client *apns2.Client
 
-	if PushConf.Ios.Production {
+	if isProduction {
 		client = apns2.NewClient(certificate).Production()
 	} else {
 		client = apns2.NewClient(certificate).Development()
@@ -165,10 +166,10 @@ func newApnsClient(certificate tls.Certificate) (*apns2.Client, error) {
 	return client, nil
 }
 
-func newApnsTokenClient(token *token.Token) (*apns2.Client, error) {
+func newApnsTokenClient(token *token.Token, isProduction bool) (*apns2.Client, error) {
 	var client *apns2.Client
 
-	if PushConf.Ios.Production {
+	if isProduction {
 		client = apns2.NewTokenClient(token).Production()
 	} else {
 		client = apns2.NewTokenClient(token).Development()
@@ -350,14 +351,14 @@ func GetIOSNotification(req PushNotification) *apns2.Notification {
 
 func getApnsClient(req PushNotification) (client *apns2.Client) {
 	if req.Production {
-		client = ApnsClient.Production()
+		client = ApnsClients[req.TenantId].Production()
 	} else if req.Development {
-		client = ApnsClient.Development()
+		client = ApnsClients[req.TenantId].Development()
 	} else {
-		if PushConf.Ios.Production {
-			client = ApnsClient.Production()
+		if PushConf.Tenants[req.TenantId].Ios.Production {
+			client = ApnsClients[req.TenantId].Production()
 		} else {
-			client = ApnsClient.Development()
+			client = ApnsClients[req.TenantId].Development()
 		}
 	}
 	return
@@ -366,10 +367,14 @@ func getApnsClient(req PushNotification) (client *apns2.Client) {
 // PushToIOS provide send notification to APNs server.
 func PushToIOS(req PushNotification) {
 	LogAccess.Debug("Start push notification for iOS")
+	if req.TenantId == "" {
+		LogError.Error("missing tenant id for Android notification")
+		return
+	}
 
 	var (
 		retryCount = 0
-		maxRetry   = PushConf.Ios.MaxRetry
+		maxRetry   = PushConf.Tenants[req.TenantId].Ios.MaxRetry
 	)
 
 	if req.Retry > 0 && req.Retry < maxRetry {
@@ -383,12 +388,12 @@ Retry:
 	client := getApnsClient(req)
 
 	var wg sync.WaitGroup
-	for _, token := range req.Tokens {
+	for _, iosToken := range req.Tokens {
 		// occupy push slot
-		MaxConcurrentIOSPushes <- struct{}{}
+		MaxConcurrentIOSPushes[req.TenantId] <- struct{}{}
 		wg.Add(1)
 		go func(notification apns2.Notification, token string) {
-			notification.DeviceToken = token
+			notification.DeviceToken = iosToken
 
 			// send ios notification
 			res, err := client.Push(&notification)
@@ -399,35 +404,35 @@ Retry:
 					err = errors.New(res.Reason)
 				}
 				// apns server error
-				LogPush(FailedPush, token, req, err)
+				LogPush(FailedPush, iosToken, req, err)
 
 				if PushConf.Core.Sync {
-					req.AddLog(getLogPushEntry(FailedPush, token, req, err))
+					req.AddLog(getLogPushEntry(FailedPush, iosToken, req, err))
 				} else if PushConf.Core.FeedbackURL != "" {
 					go func(logger *logrus.Logger, log LogPushEntry, url string, timeout int64) {
 						err := DispatchFeedback(log, url, timeout)
 						if err != nil {
 							logger.Error(err)
 						}
-					}(LogError, getLogPushEntry(FailedPush, token, req, err), PushConf.Core.FeedbackURL, PushConf.Core.FeedbackTimeout)
+					}(LogError, getLogPushEntry(FailedPush, iosToken, req, err), PushConf.Core.FeedbackURL, PushConf.Core.FeedbackTimeout)
 				}
 
 				StatStorage.AddIosError(1)
 				// We should retry only "retryable" statuses. More info about response:
 				// https://developer.apple.com/documentation/usernotifications/setting_up_a_remote_notification_server/handling_notification_responses_from_apns
 				if res != nil && res.StatusCode >= http.StatusInternalServerError {
-					newTokens = append(newTokens, token)
+					newTokens = append(newTokens, iosToken)
 				}
 			}
 
 			if res != nil && res.Sent() {
-				LogPush(SucceededPush, token, req, nil)
+				LogPush(SucceededPush, iosToken, req, nil)
 				StatStorage.AddIosSuccess(1)
 			}
 			// free push slot
-			<-MaxConcurrentIOSPushes
+			<-MaxConcurrentIOSPushes[req.TenantId]
 			wg.Done()
-		}(*notification, token)
+		}(*notification, iosToken)
 	}
 	wg.Wait()
 

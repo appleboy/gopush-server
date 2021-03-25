@@ -24,6 +24,7 @@ var (
 
 // LogPushEntry is push response log
 type LogPushEntry struct {
+	TenantId string `json:"tenant_id"`
 	ID       string `json:"notif_id,omitempty"`
 	Type     string `json:"type"`
 	Platform string `json:"platform"`
@@ -115,11 +116,11 @@ func SetLogLevel(log *logrus.Logger, levelString string) error {
 
 func colorForPlatForm(platform int) string {
 	switch platform {
-	case PlatFormIos:
+	case PlatformIos:
 		return blue
-	case PlatFormAndroid:
+	case PlatformAndroid:
 		return yellow
-	case PlatFormHuawei:
+	case PlatformHuawei:
 		return green
 	default:
 		return reset
@@ -128,11 +129,11 @@ func colorForPlatForm(platform int) string {
 
 func typeForPlatForm(platform int) string {
 	switch platform {
-	case PlatFormIos:
+	case PlatformIos:
 		return "ios"
-	case PlatFormAndroid:
+	case PlatformAndroid:
 		return "android"
-	case PlatFormHuawei:
+	case PlatformHuawei:
 		return "huawei"
 	default:
 		return ""
@@ -171,6 +172,7 @@ func getLogPushEntry(status, token string, req PushNotification, errPush error) 
 	}
 
 	return LogPushEntry{
+		TenantId: req.TenantId,
 		ID:       req.ID,
 		Type:     status,
 		Platform: plat,

@@ -32,13 +32,13 @@ func GetPushClient(conf *config.Config) (*core.HMSClient, error) {
 }
 
 // InitHMSClient use for initialize HMS Client.
-func InitHMSClient(apiKey string, appID string) (*core.HMSClient, error) {
+func InitHMSClient(tenantId string, apiKey string, appID string) (*core.HMSClient, error) {
 	if apiKey == "" {
-		return nil, errors.New("Missing Huawei API Key")
+		return nil, errors.New("missing Huawei API Key")
 	}
 
 	if appID == "" {
-		return nil, errors.New("Missing Huawei APP Id")
+		return nil, errors.New("missing Huawei APP Id")
 	}
 
 	conf := &config.Config{
@@ -48,15 +48,15 @@ func InitHMSClient(apiKey string, appID string) (*core.HMSClient, error) {
 		PushUrl:   "https://api.push.hicloud.com",
 	}
 
-	if apiKey != PushConf.Huawei.APIKey || appID != PushConf.Huawei.APPId {
+	if apiKey != PushConf.Tenants[tenantId].Huawei.APIKey || appID != PushConf.Tenants[tenantId].Huawei.APPId {
 		return GetPushClient(conf)
 	}
 
-	if HMSClient == nil {
+	if HMSClients[tenantId] == nil {
 		return GetPushClient(conf)
 	}
 
-	return HMSClient, nil
+	return HMSClients[tenantId], nil
 }
 
 // GetHuaweiNotification use for define HMS notification.
@@ -164,11 +164,15 @@ func GetHuaweiNotification(req PushNotification) (*model.MessageRequest, error) 
 // PushToHuawei provide send notification to Android server.
 func PushToHuawei(req PushNotification) bool {
 	LogAccess.Debug("Start push notification for Huawei")
+	if req.TenantId == "" {
+		LogError.Error("missing tenant id for Huawei notification")
+		return false
+	}
 
 	var (
 		client     *core.HMSClient
 		retryCount = 0
-		maxRetry   = PushConf.Huawei.MaxRetry
+		maxRetry   = PushConf.Tenants[req.TenantId].Huawei.MaxRetry
 	)
 
 	if req.Retry > 0 && req.Retry < maxRetry {
@@ -187,7 +191,7 @@ Retry:
 
 	notification, _ := GetHuaweiNotification(req)
 
-	client, err = InitHMSClient(PushConf.Huawei.APIKey, PushConf.Huawei.APPId)
+	client, err = InitHMSClient(req.TenantId, PushConf.Tenants[req.TenantId].Huawei.APIKey, PushConf.Tenants[req.TenantId].Huawei.APPId)
 
 	if err != nil {
 		// HMS server error

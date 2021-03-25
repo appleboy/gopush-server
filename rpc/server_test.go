@@ -10,13 +10,13 @@ import (
 	"google.golang.org/grpc/connectivity"
 )
 
-const gRPCAddr = "localhost:9000"
+const gRPCAddr = "localhost:9003"
 
 func TestGracefulShutDownGRPCServer(t *testing.T) {
 	// server configs
 	gorush.InitLog()
 	gorush.PushConf.GRPC.Enabled = true
-	gorush.PushConf.GRPC.Port = "9000"
+	gorush.PushConf.GRPC.Port = "9003"
 	gorush.PushConf.Log.Format = "json"
 
 	// Run gRPC server

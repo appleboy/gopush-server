@@ -22,11 +22,11 @@ func SendNotification(ctx context.Context, req PushNotification) {
 	}
 
 	switch req.Platform {
-	case PlatFormIos:
+	case PlatformIos:
 		PushToIOS(req)
-	case PlatFormAndroid:
+	case PlatformAndroid:
 		PushToAndroid(req)
-	case PlatFormHuawei:
+	case PlatformHuawei:
 		PushToHuawei(req)
 	}
 }
@@ -49,26 +49,28 @@ func markFailedNotification(notification *PushNotification, reason string) {
 }
 
 // queueNotification add notification to queue list.
-func queueNotification(ctx context.Context, req RequestPush) (int, []LogPushEntry) {
+func queueNotification(ctx context.Context, req RequestPush, tenantId string) (int, []LogPushEntry) {
 	var count int
 	wg := sync.WaitGroup{}
-	newNotification := []*PushNotification{}
+	var newNotification []*PushNotification
 	for i := range req.Notifications {
 		notification := &req.Notifications[i]
+		tenant := PushConf.Tenants[tenantId]
 		switch notification.Platform {
-		case PlatFormIos:
-			if !PushConf.Ios.Enabled {
+		case PlatformIos:
+			if !tenant.Ios.Enabled {
 				continue
 			}
-		case PlatFormAndroid:
-			if !PushConf.Android.Enabled {
+		case PlatformAndroid:
+			if !tenant.Android.Enabled {
 				continue
 			}
-		case PlatFormHuawei:
-			if !PushConf.Huawei.Enabled {
+		case PlatformHuawei:
+			if !tenant.Huawei.Enabled {
 				continue
 			}
 		}
+		notification.TenantId = tenantId
 		newNotification = append(newNotification, notification)
 	}
 

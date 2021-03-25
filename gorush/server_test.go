@@ -218,11 +218,14 @@ func TestAPIConfigHandler(t *testing.T) {
 
 func TestMissingNotificationsParameter(t *testing.T) {
 	initTest()
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
+	tenant.PushURI = "/api/push/" + tenantId
 
 	r := gofight.New()
 
 	// missing notifications parameter.
-	r.POST("/api/push").
+	r.POST(tenant.PushURI).
 		Run(routerEngine(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
 			assert.Equal(t, http.StatusBadRequest, r.Code)
 			assert.Equal(t, "application/json; charset=utf-8", r.HeaderMap.Get("Content-Type"))
@@ -231,11 +234,14 @@ func TestMissingNotificationsParameter(t *testing.T) {
 
 func TestEmptyNotifications(t *testing.T) {
 	initTest()
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
+	tenant.PushURI = "/api/push/" + tenantId
 
 	r := gofight.New()
 
 	// notifications is empty.
-	r.POST("/api/push").
+	r.POST(tenant.PushURI).
 		SetJSON(gofight.D{
 			"notifications": []PushNotification{},
 		}).
@@ -246,16 +252,19 @@ func TestEmptyNotifications(t *testing.T) {
 
 func TestMutableContent(t *testing.T) {
 	initTest()
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
+	tenant.PushURI = "/api/push/" + tenantId
 
 	r := gofight.New()
 
 	// notifications is empty.
-	r.POST("/api/push").
+	r.POST(tenant.PushURI).
 		SetJSON(gofight.D{
 			"notifications": []gofight.D{
 				{
 					"tokens":          []string{"aaaaa", "bbbbb"},
-					"platform":        PlatFormAndroid,
+					"platform":        PlatformAndroid,
 					"message":         "Welcome",
 					"mutable_content": 1,
 					"topic":           "test",
@@ -275,23 +284,26 @@ func TestMutableContent(t *testing.T) {
 
 func TestOutOfRangeMaxNotifications(t *testing.T) {
 	initTest()
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
+	tenant.PushURI = "/api/push/" + tenantId
 
 	PushConf.Core.MaxNotification = int64(1)
 
 	r := gofight.New()
 
 	// notifications is empty.
-	r.POST("/api/push").
+	r.POST(tenant.PushURI).
 		SetJSON(gofight.D{
 			"notifications": []gofight.D{
 				{
 					"tokens":   []string{"aaaaa", "bbbbb"},
-					"platform": PlatFormAndroid,
+					"platform": PlatformAndroid,
 					"message":  "Welcome",
 				},
 				{
 					"tokens":   []string{"aaaaa", "bbbbb"},
-					"platform": PlatFormAndroid,
+					"platform": PlatformAndroid,
 					"message":  "Welcome",
 				},
 			},
@@ -304,21 +316,101 @@ func TestOutOfRangeMaxNotifications(t *testing.T) {
 func TestSuccessPushHandler(t *testing.T) {
 	t.Skip()
 	initTest()
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
+	tenant.PushURI = "/api/push/" + tenantId
 
-	PushConf.Android.Enabled = true
-	PushConf.Android.APIKey = os.Getenv("ANDROID_API_KEY")
+	tenant.Android.Enabled = true
+	tenant.Android.APIKey = os.Getenv("ANDROID_API_KEY")
 
 	androidToken := os.Getenv("ANDROID_TEST_TOKEN")
 
 	r := gofight.New()
 
-	r.POST("/api/push").
+	r.POST(tenant.PushURI).
 		SetJSON(gofight.D{
 			"notifications": []gofight.D{
 				{
 					"tokens":   []string{androidToken, "bbbbb"},
-					"platform": PlatFormAndroid,
+					"platform": PlatformAndroid,
 					"message":  "Welcome",
+				},
+			},
+		}).
+		Run(routerEngine(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, http.StatusOK, r.Code)
+		})
+}
+
+func TestSuccessPushHandlerMultiTenant(t *testing.T) {
+	t.Skip()
+	initTest()
+	tenantId1 := "tenant_id1"
+	tenant1 := config.SectionTenant{}
+	PushConf.Tenants[tenantId1] = &tenant1
+	tenant1.PushURI = "/api/push/" + tenantId1
+	tenant1.Ios.Enabled = false
+	tenant1.Huawei.Enabled = false
+	tenant1.Android.Enabled = true
+	tenant1.Android.APIKey = os.Getenv("ANDROID_API_KEY_1")
+	androidToken1 := os.Getenv("ANDROID_TEST_TOKEN_1")
+
+	tenantId2 := "tenant_id2"
+	tenant2 := config.SectionTenant{}
+	PushConf.Tenants[tenantId2] = &tenant2
+	tenant2.PushURI = "/api/push/"
+	tenant2.Ios.Enabled = false
+	tenant2.Huawei.Enabled = false
+	tenant2.Android.Enabled = true
+	tenant2.Android.APIKey = os.Getenv("ANDROID_API_KEY_2")
+	androidToken2 := os.Getenv("ANDROID_TEST_TOKEN_2")
+
+	tenantId3 := "tenant_id3"
+	tenant3 := config.SectionTenant{}
+	PushConf.Tenants[tenantId3] = &tenant3
+	tenant3.PushURI = "/api/push/" + tenantId3
+	tenant3.Ios.Enabled = false
+	tenant3.Huawei.Enabled = false
+	tenant3.Android.Enabled = true
+	tenant3.Android.APIKey = os.Getenv("ANDROID_API_KEY_3")
+
+	r := gofight.New()
+
+	r.POST(tenant1.PushURI).
+		SetJSON(gofight.D{
+			"notifications": []gofight.D{
+				{
+					"tokens":   []string{androidToken1},
+					"platform": PlatformAndroid,
+					"message":  "Welcome 1",
+				},
+			},
+		}).
+		Run(routerEngine(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, http.StatusOK, r.Code)
+		})
+
+	r.POST(tenant2.PushURI).
+		SetJSON(gofight.D{
+			"notifications": []gofight.D{
+				{
+					"tokens":   []string{androidToken2},
+					"platform": PlatformAndroid,
+					"message":  "Welcome 2",
+				},
+			},
+		}).
+		Run(routerEngine(), func(r gofight.HTTPResponse, rq gofight.HTTPRequest) {
+			assert.Equal(t, http.StatusBadRequest, r.Code)
+		})
+
+	r.POST(tenant3.PushURI).
+		SetJSON(gofight.D{
+			"notifications": []gofight.D{
+				{
+					"tokens":   []string{""},
+					"platform": PlatformAndroid,
+					"message":  "Welcome 3",
 				},
 			},
 		}).

@@ -9,23 +9,19 @@ import (
 )
 
 // InitFCMClient use for initialize FCM Client.
-func InitFCMClient(key string) (*fcm.Client, error) {
+func InitFCMClient(tenantId string, key string) (*fcm.Client, error) {
 	var err error
 
 	if key == "" {
-		return nil, errors.New("Missing Android API Key")
+		return nil, errors.New("missing Android API Key for tenant " + tenantId)
 	}
 
-	if key != PushConf.Android.APIKey {
-		return fcm.NewClient(key)
+	if FCMClients[tenantId] == nil {
+		FCMClients[tenantId], err = fcm.NewClient(key)
+		return FCMClients[tenantId], err
 	}
 
-	if FCMClient == nil {
-		FCMClient, err = fcm.NewClient(key)
-		return FCMClient, err
-	}
-
-	return FCMClient, nil
+	return FCMClients[tenantId], nil
 }
 
 // GetAndroidNotification use for define Android notification.
@@ -103,11 +99,15 @@ func GetAndroidNotification(req PushNotification) *fcm.Message {
 // PushToAndroid provide send notification to Android server.
 func PushToAndroid(req PushNotification) {
 	LogAccess.Debug("Start push notification for Android")
+	if req.TenantId == "" {
+		LogError.Error("missing tenant id for Android notification")
+		return
+	}
 
 	var (
 		client     *fcm.Client
 		retryCount = 0
-		maxRetry   = PushConf.Android.MaxRetry
+		maxRetry   = PushConf.Tenants[req.TenantId].Android.MaxRetry
 	)
 
 	if req.Retry > 0 && req.Retry < maxRetry {
@@ -125,9 +125,9 @@ Retry:
 	notification := GetAndroidNotification(req)
 
 	if req.APIKey != "" {
-		client, err = InitFCMClient(req.APIKey)
+		client, err = InitFCMClient(req.TenantId, req.APIKey)
 	} else {
-		client, err = InitFCMClient(PushConf.Android.APIKey)
+		client, err = InitFCMClient(req.TenantId, PushConf.Tenants[req.TenantId].Android.APIKey)
 	}
 
 	if err != nil {

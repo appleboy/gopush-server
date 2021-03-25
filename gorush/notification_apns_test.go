@@ -24,33 +24,45 @@ const authkeyInvalidP8 = `TUlHSEFnRUFNQk1HQnlxR1NNNDlBZ0VHQ0NxR1NNNDlBd0VIQkcwd2
 
 const authkeyValidP8 = `LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JR0hBZ0VBTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEJHMHdhd0lCQVFRZ0ViVnpmUG5aUHhmQXl4cUUKWlYwNWxhQW9KQWwrLzZYdDJPNG1PQjYxMXNPaFJBTkNBQVNnRlRLandKQUFVOTVnKysvdnpLV0hrekFWbU5NSQp0QjV2VGpaT09Jd25FYjcwTXNXWkZJeVVGRDFQOUd3c3R6NCtha0hYN3ZJOEJINmhIbUJtZmVRbAotLS0tLUVORCBQUklWQVRFIEtFWS0tLS0tCg==`
 
-func TestDisabledAndroidIosConf(t *testing.T) {
+func init() {
+	ApnsClients = make(map[string]*apns2.Client)
+	MaxConcurrentIOSPushes = make(map[string]chan struct{})
+}
+
+func TestDisabledConf(t *testing.T) {
 	PushConf, _ = config.LoadConf("")
-	PushConf.Android.Enabled = false
-	PushConf.Huawei.Enabled = false
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
+
+	tenant.Android.Enabled = false
+	tenant.Huawei.Enabled = false
+	tenant.Ios.Enabled = false
 
 	err := CheckPushConf()
 
 	assert.Error(t, err)
-	assert.Equal(t, "Please enable iOS, Android or Huawei config in yml config", err.Error())
+	assert.Equal(t, "please enable iOS, Android or Huawei config in yml config for tenant "+tenantId, err.Error())
 }
 
 func TestMissingIOSCertificate(t *testing.T) {
 	PushConf, _ = config.LoadConf("")
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
 
-	PushConf.Ios.Enabled = true
-	PushConf.Ios.KeyPath = ""
-	PushConf.Ios.KeyBase64 = ""
+	tenant.Ios.Enabled = true
+	tenant.Ios.KeyPath = ""
+	tenant.Ios.KeyBase64 = ""
+
 	err := CheckPushConf()
 
 	assert.Error(t, err)
-	assert.Equal(t, "Missing iOS certificate key", err.Error())
+	assert.Equal(t, "missing iOS certificate key for tenant "+tenantId, err.Error())
 
-	PushConf.Ios.KeyPath = "test.pem"
+	tenant.Ios.KeyPath = "test.pem"
 	err = CheckPushConf()
 
 	assert.Error(t, err)
-	assert.Equal(t, "certificate file does not exist", err.Error())
+	assert.Equal(t, "certificate file does not exist for tenant "+tenantId, err.Error())
 }
 
 func TestIOSNotificationStructure(t *testing.T) {
@@ -362,20 +374,20 @@ func TestCheckSilentNotification(t *testing.T) {
 	assert.Nil(t, dat["aps"].(map[string]interface{})["badge"])
 }
 
-// URL: https://goo.gl/5xFo3C
-// Example 2
-// {
-//     "aps" : {
-//         "alert" : {
-//             "title" : "Game Request",
-//             "body" : "Bob wants to play poker",
-//             "action-loc-key" : "PLAY"
-//         },
-//         "badge" : 5
-//     },
-//     "acme1" : "bar",
-//     "acme2" : [ "bang",  "whiz" ]
-// }
+//URL: https://goo.gl/5xFo3C
+//Example 2
+//{
+//    "aps" : {
+//        "alert" : {
+//            "title" : "Game Request",
+//            "body" : "Bob wants to play poker",
+//            "action-loc-key" : "PLAY"
+//        },
+//        "badge" : 5
+//    },
+//    "acme1" : "bar",
+//    "acme2" : [ "bang",  "whiz" ]
+//}
 func TestAlertStringExample2ForIos(t *testing.T) {
 	var dat map[string]interface{}
 
@@ -567,14 +579,16 @@ func TestIOSAlertNotificationStructure(t *testing.T) {
 func TestDisabledIosNotifications(t *testing.T) {
 	ctx := context.Background()
 	PushConf, _ = config.LoadConf("")
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
 
-	PushConf.Ios.Enabled = false
-	PushConf.Ios.KeyPath = "../certificate/certificate-valid.pem"
-	err := InitAPNSClient()
+	tenant.Ios.Enabled = false
+	tenant.Ios.KeyPath = "../certificate/certificate-valid.pem"
+	err := InitAPNSClient("tenant_id1", *tenant)
 	assert.Nil(t, err)
 
-	PushConf.Android.Enabled = true
-	PushConf.Android.APIKey = os.Getenv("ANDROID_API_KEY")
+	tenant.Android.Enabled = true
+	tenant.Android.APIKey = os.Getenv("ANDROID_API_KEY")
 
 	androidToken := os.Getenv("ANDROID_TEST_TOKEN")
 
@@ -583,37 +597,39 @@ func TestDisabledIosNotifications(t *testing.T) {
 			// ios
 			{
 				Tokens:   []string{"11aa01229f15f0f0c52029d8cf8cd0aeaf2365fe4cebc4af26cd6d76b7919ef7"},
-				Platform: PlatFormIos,
+				Platform: PlatformIos,
 				Message:  "Welcome",
 			},
 			// android
 			{
 				Tokens:   []string{androidToken, androidToken + "_"},
-				Platform: PlatFormAndroid,
+				Platform: PlatformAndroid,
 				Message:  "Welcome",
 			},
 		},
 	}
 
-	count, logs := queueNotification(ctx, req)
+	count, logs := queueNotification(ctx, req, tenantId)
 	assert.Equal(t, 2, count)
 	assert.Equal(t, 0, len(logs))
 }
 
 func TestWrongIosCertificateExt(t *testing.T) {
 	PushConf, _ = config.LoadConf("")
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
 
-	PushConf.Ios.Enabled = true
-	PushConf.Ios.KeyPath = "test"
-	err := InitAPNSClient()
+	tenant.Ios.Enabled = true
+	tenant.Ios.KeyPath = "test"
+	err := InitAPNSClient("tenant_id1", *tenant)
 
 	assert.Error(t, err)
 	assert.Equal(t, "wrong certificate key extension", err.Error())
 
-	PushConf.Ios.KeyPath = ""
-	PushConf.Ios.KeyBase64 = "abcd"
-	PushConf.Ios.KeyType = "abcd"
-	err = InitAPNSClient()
+	tenant.Ios.KeyPath = ""
+	tenant.Ios.KeyBase64 = "abcd"
+	tenant.Ios.KeyType = "abcd"
+	err = InitAPNSClient("tenant_id1", *tenant)
 
 	assert.Error(t, err)
 	assert.Equal(t, "wrong certificate key type", err.Error())
@@ -621,129 +637,139 @@ func TestWrongIosCertificateExt(t *testing.T) {
 
 func TestAPNSClientDevHost(t *testing.T) {
 	PushConf, _ = config.LoadConf("")
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
 
-	PushConf.Ios.Enabled = true
-	PushConf.Ios.KeyPath = "../certificate/certificate-valid.p12"
-	err := InitAPNSClient()
+	tenant.Ios.Enabled = true
+	tenant.Ios.KeyPath = "../certificate/certificate-valid.p12"
+	err := InitAPNSClient(tenantId, *tenant)
 	assert.Nil(t, err)
-	assert.Equal(t, apns2.HostDevelopment, ApnsClient.Host)
+	assert.Equal(t, apns2.HostDevelopment, ApnsClients[tenantId].Host)
 
-	PushConf.Ios.KeyPath = ""
-	PushConf.Ios.KeyBase64 = certificateValidP12
-	PushConf.Ios.KeyType = "p12"
-	err = InitAPNSClient()
+	tenant.Ios.KeyPath = ""
+	tenant.Ios.KeyBase64 = certificateValidP12
+	tenant.Ios.KeyType = "p12"
+	err = InitAPNSClient("tenant_id1", *tenant)
 	assert.Nil(t, err)
-	assert.Equal(t, apns2.HostDevelopment, ApnsClient.Host)
+	assert.Equal(t, apns2.HostDevelopment, ApnsClients[tenantId].Host)
 }
 
 func TestAPNSClientProdHost(t *testing.T) {
 	PushConf, _ = config.LoadConf("")
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
 
-	PushConf.Ios.Enabled = true
-	PushConf.Ios.Production = true
-	PushConf.Ios.KeyPath = "../certificate/certificate-valid.pem"
-	err := InitAPNSClient()
+	tenant.Ios.Enabled = true
+	tenant.Ios.Production = true
+	tenant.Ios.KeyPath = "../certificate/certificate-valid.pem"
+	err := InitAPNSClient(tenantId, *tenant)
 	assert.Nil(t, err)
-	assert.Equal(t, apns2.HostProduction, ApnsClient.Host)
+	assert.Equal(t, apns2.HostProduction, ApnsClients[tenantId].Host)
 
-	PushConf.Ios.KeyPath = ""
-	PushConf.Ios.KeyBase64 = certificateValidPEM
-	PushConf.Ios.KeyType = "pem"
-	err = InitAPNSClient()
+	tenant.Ios.KeyPath = ""
+	tenant.Ios.KeyBase64 = certificateValidPEM
+	tenant.Ios.KeyType = "pem"
+	err = InitAPNSClient(tenantId, *tenant)
 	assert.Nil(t, err)
-	assert.Equal(t, apns2.HostProduction, ApnsClient.Host)
+	assert.Equal(t, apns2.HostProduction, ApnsClients[tenantId].Host)
 }
 
 func TestAPNSClientInvaildToken(t *testing.T) {
 	PushConf, _ = config.LoadConf("")
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
 
-	PushConf.Ios.Enabled = true
-	PushConf.Ios.KeyPath = "../certificate/authkey-invalid.p8"
-	err := InitAPNSClient()
+	tenant.Ios.Enabled = true
+	tenant.Ios.KeyPath = "../certificate/authkey-invalid.p8"
+	err := InitAPNSClient(tenantId, *tenant)
 	assert.Error(t, err)
 
-	PushConf.Ios.KeyPath = ""
-	PushConf.Ios.KeyBase64 = authkeyInvalidP8
-	PushConf.Ios.KeyType = "p8"
-	err = InitAPNSClient()
+	tenant.Ios.KeyPath = ""
+	tenant.Ios.KeyBase64 = authkeyInvalidP8
+	tenant.Ios.KeyType = "p8"
+	err = InitAPNSClient(tenantId, *tenant)
 	assert.Error(t, err)
 
 	// empty key-id or team-id
-	PushConf.Ios.Enabled = true
-	PushConf.Ios.KeyPath = "../certificate/authkey-valid.p8"
-	err = InitAPNSClient()
+	tenant.Ios.Enabled = true
+	tenant.Ios.KeyPath = "../certificate/authkey-valid.p8"
+	err = InitAPNSClient(tenantId, *tenant)
 	assert.Error(t, err)
 
-	PushConf.Ios.KeyID = "key-id"
-	PushConf.Ios.TeamID = ""
-	err = InitAPNSClient()
+	tenant.Ios.KeyID = "key-id"
+	tenant.Ios.TeamID = ""
+	err = InitAPNSClient(tenantId, *tenant)
 	assert.Error(t, err)
 
-	PushConf.Ios.KeyID = ""
-	PushConf.Ios.TeamID = "team-id"
-	err = InitAPNSClient()
+	tenant.Ios.KeyID = ""
+	tenant.Ios.TeamID = "team-id"
+	err = InitAPNSClient(tenantId, *tenant)
 	assert.Error(t, err)
 }
 
 func TestAPNSClientVaildToken(t *testing.T) {
 	PushConf, _ = config.LoadConf("")
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
 
-	PushConf.Ios.Enabled = true
-	PushConf.Ios.KeyPath = "../certificate/authkey-valid.p8"
-	PushConf.Ios.KeyID = "key-id"
-	PushConf.Ios.TeamID = "team-id"
-	err := InitAPNSClient()
+	tenant.Ios.Enabled = true
+	tenant.Ios.KeyPath = "../certificate/authkey-valid.p8"
+	tenant.Ios.KeyID = "key-id"
+	tenant.Ios.TeamID = "team-id"
+	err := InitAPNSClient(tenantId, *tenant)
 	assert.NoError(t, err)
-	assert.Equal(t, apns2.HostDevelopment, ApnsClient.Host)
+	assert.Equal(t, apns2.HostDevelopment, ApnsClients[tenantId].Host)
 
-	PushConf.Ios.Production = true
-	err = InitAPNSClient()
+	tenant.Ios.Production = true
+	err = InitAPNSClient(tenantId, *tenant)
 	assert.NoError(t, err)
-	assert.Equal(t, apns2.HostProduction, ApnsClient.Host)
+	assert.Equal(t, apns2.HostProduction, ApnsClients[tenantId].Host)
 
 	// test base64
-	PushConf.Ios.Production = false
-	PushConf.Ios.KeyPath = ""
-	PushConf.Ios.KeyBase64 = authkeyValidP8
-	PushConf.Ios.KeyType = "p8"
-	err = InitAPNSClient()
+	tenant.Ios.Production = false
+	tenant.Ios.KeyPath = ""
+	tenant.Ios.KeyBase64 = authkeyValidP8
+	tenant.Ios.KeyType = "p8"
+	err = InitAPNSClient(tenantId, *tenant)
 	assert.NoError(t, err)
-	assert.Equal(t, apns2.HostDevelopment, ApnsClient.Host)
+	assert.Equal(t, apns2.HostDevelopment, ApnsClients[tenantId].Host)
 
-	PushConf.Ios.Production = true
-	err = InitAPNSClient()
+	tenant.Ios.Production = true
+	err = InitAPNSClient(tenantId, *tenant)
 	assert.NoError(t, err)
-	assert.Equal(t, apns2.HostProduction, ApnsClient.Host)
+	assert.Equal(t, apns2.HostProduction, ApnsClients[tenantId].Host)
 }
 
 func TestAPNSClientUseProxy(t *testing.T) {
 	PushConf, _ = config.LoadConf("")
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
 
-	PushConf.Ios.Enabled = true
-	PushConf.Ios.KeyPath = "../certificate/certificate-valid.p12"
+	tenant.Ios.Enabled = true
+	tenant.Ios.KeyPath = "../certificate/certificate-valid.p12"
 	PushConf.Core.HTTPProxy = "http://127.0.0.1:8080"
 	_ = SetProxy(PushConf.Core.HTTPProxy)
-	err := InitAPNSClient()
+	err := InitAPNSClient(tenantId, *tenant)
 	assert.Nil(t, err)
-	assert.Equal(t, apns2.HostDevelopment, ApnsClient.Host)
+	assert.Equal(t, apns2.HostDevelopment, ApnsClients[tenantId].Host)
 
 	req, _ := http.NewRequest("GET", apns2.HostDevelopment, nil)
-	actualProxyURL, err := ApnsClient.HTTPClient.Transport.(*http.Transport).Proxy(req)
+	actualProxyURL, err := ApnsClients[tenantId].HTTPClient.Transport.(*http.Transport).Proxy(req)
 	assert.Nil(t, err)
 
 	expectedProxyURL, _ := url.ParseRequestURI(PushConf.Core.HTTPProxy)
 	assert.Equal(t, expectedProxyURL, actualProxyURL)
 
-	PushConf.Ios.KeyPath = "../certificate/authkey-valid.p8"
-	PushConf.Ios.TeamID = "example.team"
-	PushConf.Ios.KeyID = "example.key"
-	err = InitAPNSClient()
+	tenant.Ios.KeyPath = "../certificate/authkey-valid.p8"
+	tenant.Ios.TeamID = "example.team"
+	tenant.Ios.KeyID = "example.key"
+	err = InitAPNSClient(tenantId, *tenant)
 	assert.Nil(t, err)
-	assert.Equal(t, apns2.HostDevelopment, ApnsClient.Host)
-	assert.NotNil(t, ApnsClient.Token)
+	assert.Equal(t, apns2.HostDevelopment, ApnsClients[tenantId].Host)
+	assert.NotNil(t, ApnsClients[tenantId].Token)
 
 	req, _ = http.NewRequest("GET", apns2.HostDevelopment, nil)
-	actualProxyURL, err = ApnsClient.HTTPClient.Transport.(*http.Transport).Proxy(req)
+	actualProxyURL, err = ApnsClients[tenantId].HTTPClient.Transport.(*http.Transport).Proxy(req)
 	assert.Nil(t, err)
 
 	expectedProxyURL, _ = url.ParseRequestURI(PushConf.Core.HTTPProxy)
@@ -754,16 +780,20 @@ func TestAPNSClientUseProxy(t *testing.T) {
 
 func TestPushToIOS(t *testing.T) {
 	PushConf, _ = config.LoadConf("")
-	MaxConcurrentIOSPushes = make(chan struct{}, PushConf.Ios.MaxConcurrentPushes)
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
 
-	PushConf.Ios.Enabled = true
-	PushConf.Ios.KeyPath = "../certificate/certificate-valid.pem"
-	err := InitAPNSClient()
+	MaxConcurrentIOSPushes[tenantId] = make(chan struct{}, tenant.Ios.MaxConcurrentPushes)
+
+	tenant.Ios.Enabled = true
+	tenant.Ios.KeyPath = "../certificate/certificate-valid.pem"
+	err := InitAPNSClient(tenantId, *tenant)
 	assert.Nil(t, err)
 	err = InitAppStatus()
 	assert.Nil(t, err)
 
 	req := PushNotification{
+		TenantId: tenantId,
 		Tokens:   []string{"11aa01229f15f0f0c52029d8cf8cd0aeaf2365fe4cebc4af26cd6d76b7919ef7", "11aa01229f15f0f0c52029d8cf8cd0aeaf2365fe4cebc4af26cd6d76b7919ef1"},
 		Platform: 1,
 		Message:  "Welcome",
@@ -775,32 +805,38 @@ func TestPushToIOS(t *testing.T) {
 
 func TestApnsHostFromRequest(t *testing.T) {
 	PushConf, _ = config.LoadConf("")
+	tenantId := "tenant_id1"
+	tenant := PushConf.Tenants[tenantId]
 
-	PushConf.Ios.Enabled = true
-	PushConf.Ios.KeyPath = "../certificate/certificate-valid.pem"
-	err := InitAPNSClient()
+	tenant.Ios.Enabled = true
+	tenant.Ios.KeyPath = "../certificate/certificate-valid.pem"
+	err := InitAPNSClient(tenantId, *tenant)
 	assert.Nil(t, err)
 	err = InitAppStatus()
 	assert.Nil(t, err)
 
 	req := PushNotification{
+		TenantId:   tenantId,
 		Production: true,
 	}
 	client := getApnsClient(req)
 	assert.Equal(t, apns2.HostProduction, client.Host)
 
 	req = PushNotification{
+		TenantId:    tenantId,
 		Development: true,
 	}
 	client = getApnsClient(req)
 	assert.Equal(t, apns2.HostDevelopment, client.Host)
 
-	req = PushNotification{}
-	PushConf.Ios.Production = true
+	req = PushNotification{
+		TenantId: tenantId,
+	}
+	tenant.Ios.Production = true
 	client = getApnsClient(req)
 	assert.Equal(t, apns2.HostProduction, client.Host)
 
-	PushConf.Ios.Production = false
+	tenant.Ios.Production = false
 	client = getApnsClient(req)
 	assert.Equal(t, apns2.HostDevelopment, client.Host)
 }

@@ -30,7 +30,6 @@ grpc:
   port: 9000
 
 api:
-  push_uri: "/api/push"
   stat_go_uri: "/api/stat/go"
   stat_app_uri: "/api/stat/app"
   config_uri: "/api/config"
@@ -38,28 +37,29 @@ api:
   metric_uri: "/metrics"
   health_uri: "/healthz"
 
-android:
-  enabled: true
-  apikey: "YOUR_API_KEY"
-  max_retry: 0 # resend fail notification, default value zero is disabled
-
-huawei:
-  enabled: true
-  apikey: "YOUR_API_KEY"
-  appid: "YOUR_APP_ID"
-  max_retry: 0 # resend fail notification, default value zero is disabled
-
-ios:
-  enabled: false
-  key_path: "key.pem"
-  key_base64: "" # load iOS key from base64 input
-  key_type: "pem" # could be pem, p12 or p8 type
-  password: "" # certificate password, default as empty string.
-  production: false
-  max_concurrent_pushes: 100 # just for push ios notification
-  max_retry: 0 # resend fail notification, default value zero is disabled
-  key_id: "" # KeyID from developer account (Certificates, Identifiers & Profiles -> Keys)
-  team_id: "" # TeamID from developer account (View Account -> Membership)
+tenants:
+  - tenant_id1:
+      push_uri: "/api/push/tenant1" # must be in the form of /api/push/:tenant_id
+      android:
+        enabled: true
+        api_key: "YOUR_API_KEY"
+        max_retry: 0 # resend fail notification, default value zero is disabled
+      ios:
+        enabled: false
+        key_path: "key.pem"
+        key_base64: "" # load iOS key from base64 input
+        key_type: "pem" # could be pem, p12 or p8 type
+        password: "" # certificate password, default as empty string.
+        production: false
+        max_concurrent_pushes: 100 # just for push ios notification
+        max_retry: 0 # resend fail notification, default value zero is disabled
+        key_id: "" # KeyID from developer account (Certificates, Identifiers & Profiles -> Keys)
+        team_id: "" # TeamID from developer account (View Account -> Membership)
+      huawei:
+        enabled: true
+        api_key: "YOUR_API_KEY"
+        app_id: "YOUR_APP_ID"
+        max_retry: 0 # resend fail notification, default value zero is disabled
 
 log:
   format: "string" # string or json

@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
+	"strings"
 
 	api "github.com/appleboy/gin-status-api"
 	"github.com/gin-contrib/logger"
@@ -54,24 +56,34 @@ func versionHandler(c *gin.Context) {
 func pushHandler(c *gin.Context) {
 	var form RequestPush
 	var msg string
+	fullPath := c.FullPath()
+	tenantId := filepath.Base(fullPath)
+	pathSegments := strings.Split(fullPath, "/")
+
+	if len(pathSegments) < 4 || pathSegments[3] == "" || tenantId == "" {
+		msg = "'/:tenant_id' path is missing or incorrect format. should be `/api/push/:tenant_id`"
+		LogAccess.Error(msg)
+		abortWithError(c, http.StatusBadRequest, msg)
+		return
+	}
 
 	if err := c.ShouldBindWith(&form, binding.JSON); err != nil {
 		msg = "Missing notifications field."
-		LogAccess.Debug(err)
+		LogAccess.Error(err)
 		abortWithError(c, http.StatusBadRequest, msg)
 		return
 	}
 
 	if len(form.Notifications) == 0 {
 		msg = "Notifications field is empty."
-		LogAccess.Debug(msg)
+		LogAccess.Error(msg)
 		abortWithError(c, http.StatusBadRequest, msg)
 		return
 	}
 
 	if int64(len(form.Notifications)) > PushConf.Core.MaxNotification {
 		msg = fmt.Sprintf("Number of notifications(%d) over limit(%d)", len(form.Notifications), PushConf.Core.MaxNotification)
-		LogAccess.Debug(msg)
+		LogAccess.Error(msg)
 		abortWithError(c, http.StatusBadRequest, msg)
 		return
 	}
@@ -90,7 +102,7 @@ func pushHandler(c *gin.Context) {
 		}
 	}()
 
-	counts, logs := queueNotification(ctx, form)
+	counts, logs := queueNotification(ctx, form, tenantId)
 
 	c.JSON(http.StatusOK, gin.H{
 		"success": "ok",
@@ -156,12 +168,14 @@ func routerEngine() *gin.Engine {
 	r.GET(PushConf.API.StatAppURI, appStatusHandler)
 	r.GET(PushConf.API.ConfigURI, configHandler)
 	r.GET(PushConf.API.SysStatURI, sysStatsHandler)
-	r.POST(PushConf.API.PushURI, pushHandler)
 	r.GET(PushConf.API.MetricURI, metricsHandler)
 	r.GET(PushConf.API.HealthURI, heartbeatHandler)
 	r.HEAD(PushConf.API.HealthURI, heartbeatHandler)
 	r.GET("/version", versionHandler)
 	r.GET("/", rootHandler)
 
+	for _, tenant := range PushConf.Tenants {
+		r.POST(tenant.PushURI, pushHandler)
+	}
 	return r
 }

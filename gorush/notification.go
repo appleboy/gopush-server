@@ -52,8 +52,9 @@ type RequestPush struct {
 
 // PushNotification is single notification request
 type PushNotification struct {
-	wg  *sync.WaitGroup
-	log *[]LogPushEntry
+	wg       *sync.WaitGroup
+	log      *[]LogPushEntry
+	TenantId string
 
 	// Common
 	ID               string      `json:"notif_id,omitempty"`
@@ -131,11 +132,11 @@ func (p *PushNotification) AddLog(log LogPushEntry) {
 // IsTopic check if message format is topic for FCM
 // ref: https://firebase.google.com/docs/cloud-messaging/send-message#topic-http-post-request
 func (p *PushNotification) IsTopic() bool {
-	if p.Platform == PlatFormAndroid {
+	if p.Platform == PlatformAndroid {
 		return p.To != "" && strings.HasPrefix(p.To, "/topics/") || p.Condition != ""
 	}
 
-	if p.Platform == PlatFormHuawei {
+	if p.Platform == PlatformHuawei {
 		return p.Topic != "" || p.Condition != ""
 	}
 
@@ -146,33 +147,39 @@ func (p *PushNotification) IsTopic() bool {
 func CheckMessage(req PushNotification) error {
 	var msg string
 
-	// ignore send topic mesaage from FCM
+	if req.TenantId == "" {
+		msg = "the message must specify a tenant ID"
+		LogAccess.Debug(msg)
+		return errors.New(msg)
+	}
+
+	// ignore send topic message from FCM
 	if !req.IsTopic() && len(req.Tokens) == 0 && req.To == "" {
 		msg = "the message must specify at least one registration ID"
 		LogAccess.Debug(msg)
 		return errors.New(msg)
 	}
 
-	if len(req.Tokens) == PlatFormIos && req.Tokens[0] == "" {
+	if len(req.Tokens) == PlatformIos && req.Tokens[0] == "" {
 		msg = "the token must not be empty"
 		LogAccess.Debug(msg)
 		return errors.New(msg)
 	}
 
-	if req.Platform == PlatFormAndroid && len(req.Tokens) > 1000 {
+	if req.Platform == PlatformAndroid && len(req.Tokens) > 1000 {
 		msg = "the message may specify at most 1000 registration IDs"
 		LogAccess.Debug(msg)
 		return errors.New(msg)
 	}
 
-	if req.Platform == PlatFormHuawei && len(req.Tokens) > 500 {
+	if req.Platform == PlatformHuawei && len(req.Tokens) > 500 {
 		msg = "the message may specify at most 500 registration IDs for Huawei"
 		LogAccess.Debug(msg)
 		return errors.New(msg)
 	}
 
 	// ref: https://firebase.google.com/docs/cloud-messaging/http-server-ref
-	if req.Platform == PlatFormAndroid && req.TimeToLive != nil && *req.TimeToLive > uint(2419200) {
+	if req.Platform == PlatformAndroid && req.TimeToLive != nil && *req.TimeToLive > uint(2419200) {
 		msg = "the message's TimeToLive field must be an integer " +
 			"between 0 and 2419200 (4 weeks)"
 		LogAccess.Debug(msg)
@@ -197,36 +204,38 @@ func SetProxy(proxy string) error {
 
 // CheckPushConf provide check your yml config.
 func CheckPushConf() error {
-	if !PushConf.Ios.Enabled && !PushConf.Android.Enabled && !PushConf.Huawei.Enabled {
-		return errors.New("Please enable iOS, Android or Huawei config in yml config")
-	}
-
-	if PushConf.Ios.Enabled {
-		if PushConf.Ios.KeyPath == "" && PushConf.Ios.KeyBase64 == "" {
-			return errors.New("Missing iOS certificate key")
+	for tenantId, tenant := range PushConf.Tenants {
+		if !tenant.Ios.Enabled && !tenant.Android.Enabled && !tenant.Huawei.Enabled {
+			return errors.New("please enable iOS, Android or Huawei config in yml config for tenant " + tenantId)
 		}
 
-		// check certificate file exist
-		if PushConf.Ios.KeyPath != "" {
-			if _, err := os.Stat(PushConf.Ios.KeyPath); os.IsNotExist(err) {
-				return errors.New("certificate file does not exist")
+		if tenant.Ios.Enabled {
+			if tenant.Ios.KeyPath == "" && tenant.Ios.KeyBase64 == "" {
+				return errors.New("missing iOS certificate key for tenant " + tenantId)
+			}
+
+			// check certificate file exist
+			if tenant.Ios.KeyPath != "" {
+				if _, err := os.Stat(tenant.Ios.KeyPath); os.IsNotExist(err) {
+					return errors.New("certificate file does not exist for tenant " + tenantId)
+				}
 			}
 		}
-	}
 
-	if PushConf.Android.Enabled {
-		if PushConf.Android.APIKey == "" {
-			return errors.New("Missing Android API Key")
-		}
-	}
-
-	if PushConf.Huawei.Enabled {
-		if PushConf.Huawei.APIKey == "" {
-			return errors.New("Missing Huawei API Key")
+		if tenant.Android.Enabled {
+			if tenant.Android.APIKey == "" {
+				return errors.New("missing Android API Key for tenant " + tenantId)
+			}
 		}
 
-		if PushConf.Huawei.APPId == "" {
-			return errors.New("Missing Huawei APP Id")
+		if tenant.Huawei.Enabled {
+			if tenant.Huawei.APIKey == "" {
+				return errors.New("missing Huawei API Key for tenant " + tenantId)
+			}
+
+			if tenant.Huawei.APPId == "" {
+				return errors.New("missing Huawei APP Id for tenant " + tenantId)
+			}
 		}
 	}
 

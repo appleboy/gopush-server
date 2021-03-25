@@ -63,7 +63,6 @@ func (suite *ConfigTestSuite) TestValidateConfDefault() {
 	assert.Equal(suite.T(), "", suite.ConfGorushDefault.Core.AutoTLS.Host)
 
 	// Api
-	assert.Equal(suite.T(), "/api/push", suite.ConfGorushDefault.API.PushURI)
 	assert.Equal(suite.T(), "/api/stat/go", suite.ConfGorushDefault.API.StatGoURI)
 	assert.Equal(suite.T(), "/api/stat/app", suite.ConfGorushDefault.API.StatAppURI)
 	assert.Equal(suite.T(), "/api/config", suite.ConfGorushDefault.API.ConfigURI)
@@ -71,22 +70,24 @@ func (suite *ConfigTestSuite) TestValidateConfDefault() {
 	assert.Equal(suite.T(), "/metrics", suite.ConfGorushDefault.API.MetricURI)
 	assert.Equal(suite.T(), "/healthz", suite.ConfGorushDefault.API.HealthURI)
 
+	tenant := suite.ConfGorushDefault.Tenants["tenant_id1"]
+	assert.Equal(suite.T(), "/push/uri/tenant1", tenant.PushURI)
 	// Android
-	assert.Equal(suite.T(), true, suite.ConfGorushDefault.Android.Enabled)
-	assert.Equal(suite.T(), "YOUR_API_KEY", suite.ConfGorushDefault.Android.APIKey)
-	assert.Equal(suite.T(), 0, suite.ConfGorushDefault.Android.MaxRetry)
+	assert.Equal(suite.T(), true, tenant.Android.Enabled)
+	assert.Equal(suite.T(), "YOUR_API_KEY", tenant.Android.APIKey)
+	assert.Equal(suite.T(), 0, tenant.Android.MaxRetry)
 
 	// iOS
-	assert.Equal(suite.T(), false, suite.ConfGorushDefault.Ios.Enabled)
-	assert.Equal(suite.T(), "", suite.ConfGorushDefault.Ios.KeyPath)
-	assert.Equal(suite.T(), "", suite.ConfGorushDefault.Ios.KeyBase64)
-	assert.Equal(suite.T(), "pem", suite.ConfGorushDefault.Ios.KeyType)
-	assert.Equal(suite.T(), "", suite.ConfGorushDefault.Ios.Password)
-	assert.Equal(suite.T(), false, suite.ConfGorushDefault.Ios.Production)
-	assert.Equal(suite.T(), uint(100), suite.ConfGorushDefault.Ios.MaxConcurrentPushes)
-	assert.Equal(suite.T(), 0, suite.ConfGorushDefault.Ios.MaxRetry)
-	assert.Equal(suite.T(), "", suite.ConfGorushDefault.Ios.KeyID)
-	assert.Equal(suite.T(), "", suite.ConfGorushDefault.Ios.TeamID)
+	assert.Equal(suite.T(), false, tenant.Ios.Enabled)
+	assert.Equal(suite.T(), "", tenant.Ios.KeyPath)
+	assert.Equal(suite.T(), "", tenant.Ios.KeyBase64)
+	assert.Equal(suite.T(), "pem", tenant.Ios.KeyType)
+	assert.Equal(suite.T(), "", tenant.Ios.Password)
+	assert.Equal(suite.T(), false, tenant.Ios.Production)
+	assert.Equal(suite.T(), uint(100), tenant.Ios.MaxConcurrentPushes)
+	assert.Equal(suite.T(), 0, tenant.Ios.MaxRetry)
+	assert.Equal(suite.T(), "", tenant.Ios.KeyID)
+	assert.Equal(suite.T(), "", tenant.Ios.TeamID)
 
 	// log
 	assert.Equal(suite.T(), "string", suite.ConfGorushDefault.Log.Format)
@@ -140,7 +141,6 @@ func (suite *ConfigTestSuite) TestValidateConf() {
 	assert.Equal(suite.T(), "", suite.ConfGorush.Core.AutoTLS.Host)
 
 	// Api
-	assert.Equal(suite.T(), "/api/push", suite.ConfGorush.API.PushURI)
 	assert.Equal(suite.T(), "/api/stat/go", suite.ConfGorush.API.StatGoURI)
 	assert.Equal(suite.T(), "/api/stat/app", suite.ConfGorush.API.StatAppURI)
 	assert.Equal(suite.T(), "/api/config", suite.ConfGorush.API.ConfigURI)
@@ -149,21 +149,21 @@ func (suite *ConfigTestSuite) TestValidateConf() {
 	assert.Equal(suite.T(), "/healthz", suite.ConfGorush.API.HealthURI)
 
 	// Android
-	assert.Equal(suite.T(), true, suite.ConfGorush.Android.Enabled)
-	assert.Equal(suite.T(), "YOUR_API_KEY", suite.ConfGorush.Android.APIKey)
-	assert.Equal(suite.T(), 0, suite.ConfGorush.Android.MaxRetry)
+	assert.Equal(suite.T(), true, suite.ConfGorush.Tenants["tenant_id1"].Android.Enabled)
+	assert.Equal(suite.T(), "YOUR_API_KEY", suite.ConfGorush.Tenants["tenant_id1"].Android.APIKey)
+	assert.Equal(suite.T(), 0, suite.ConfGorush.Tenants["tenant_id1"].Android.MaxRetry)
 
 	// iOS
-	assert.Equal(suite.T(), false, suite.ConfGorush.Ios.Enabled)
-	assert.Equal(suite.T(), "key.pem", suite.ConfGorush.Ios.KeyPath)
-	assert.Equal(suite.T(), "", suite.ConfGorush.Ios.KeyBase64)
-	assert.Equal(suite.T(), "pem", suite.ConfGorush.Ios.KeyType)
-	assert.Equal(suite.T(), "", suite.ConfGorush.Ios.Password)
-	assert.Equal(suite.T(), false, suite.ConfGorush.Ios.Production)
-	assert.Equal(suite.T(), uint(100), suite.ConfGorush.Ios.MaxConcurrentPushes)
-	assert.Equal(suite.T(), 0, suite.ConfGorush.Ios.MaxRetry)
-	assert.Equal(suite.T(), "", suite.ConfGorush.Ios.KeyID)
-	assert.Equal(suite.T(), "", suite.ConfGorush.Ios.TeamID)
+	assert.Equal(suite.T(), false, suite.ConfGorush.Tenants["tenant_id1"].Ios.Enabled)
+	assert.Equal(suite.T(), "key.pem", suite.ConfGorush.Tenants["tenant_id1"].Ios.KeyPath)
+	assert.Equal(suite.T(), "", suite.ConfGorush.Tenants["tenant_id1"].Ios.KeyBase64)
+	assert.Equal(suite.T(), "pem", suite.ConfGorush.Tenants["tenant_id1"].Ios.KeyType)
+	assert.Equal(suite.T(), "", suite.ConfGorush.Tenants["tenant_id1"].Ios.Password)
+	assert.Equal(suite.T(), false, suite.ConfGorush.Tenants["tenant_id1"].Ios.Production)
+	assert.Equal(suite.T(), uint(100), suite.ConfGorush.Tenants["tenant_id1"].Ios.MaxConcurrentPushes)
+	assert.Equal(suite.T(), 0, suite.ConfGorush.Tenants["tenant_id1"].Ios.MaxRetry)
+	assert.Equal(suite.T(), "", suite.ConfGorush.Tenants["tenant_id1"].Ios.KeyID)
+	assert.Equal(suite.T(), "", suite.ConfGorush.Tenants["tenant_id1"].Ios.TeamID)
 
 	// log
 	assert.Equal(suite.T(), "string", suite.ConfGorush.Log.Format)
@@ -198,8 +198,6 @@ func TestLoadConfigFromEnv(t *testing.T) {
 	os.Setenv("GORUSH_CORE_PORT", "9001")
 	os.Setenv("GORUSH_GRPC_ENABLED", "true")
 	os.Setenv("GORUSH_CORE_MAX_NOTIFICATION", "200")
-	os.Setenv("GORUSH_IOS_KEY_ID", "ABC123DEFG")
-	os.Setenv("GORUSH_IOS_TEAM_ID", "DEF123GHIJ")
 	os.Setenv("GORUSH_API_HEALTH_URI", "/healthz")
 	ConfGorush, err := LoadConf("testdata/config.yml")
 	if err != nil {
@@ -208,8 +206,6 @@ func TestLoadConfigFromEnv(t *testing.T) {
 	assert.Equal(t, "9001", ConfGorush.Core.Port)
 	assert.Equal(t, int64(200), ConfGorush.Core.MaxNotification)
 	assert.True(t, ConfGorush.GRPC.Enabled)
-	assert.Equal(t, "ABC123DEFG", ConfGorush.Ios.KeyID)
-	assert.Equal(t, "DEF123GHIJ", ConfGorush.Ios.TeamID)
 	assert.Equal(t, "/healthz", ConfGorush.API.HealthURI)
 }
 

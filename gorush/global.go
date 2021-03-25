@@ -16,11 +16,11 @@ var (
 	// QueueNotification is chan type
 	QueueNotification chan PushNotification
 	// ApnsClient is apns client
-	ApnsClient *apns2.Client
+	ApnsClients map[string]*apns2.Client
 	// FCMClient is apns client
-	FCMClient *fcm.Client
+	FCMClients map[string]*fcm.Client
 	// HMSClient is Huawei push client
-	HMSClient *core.HMSClient
+	HMSClients map[string]*core.HMSClient
 	// LogAccess is log server request log
 	LogAccess *logrus.Logger
 	// LogError is log server error log
@@ -28,5 +28,5 @@ var (
 	// StatStorage implements the storage interface
 	StatStorage storage.Storage
 	// MaxConcurrentIOSPushes pool to limit the number of concurrent iOS pushes
-	MaxConcurrentIOSPushes chan struct{}
+	MaxConcurrentIOSPushes map[string]chan struct{}
 )
