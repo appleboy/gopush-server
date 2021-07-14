@@ -1,6 +1,7 @@
 package gorush
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
@@ -34,7 +35,7 @@ func InitFCMClient(key string) (*fcm.Client, error) {
 // GetAndroidNotification use for define Android notification.
 // HTTP Connection Server Reference for Android
 // https://firebase.google.com/docs/cloud-messaging/http-server-ref
-func GetAndroidNotification(req PushNotification) *fcm.Message {
+func GetAndroidNotification(req PushNotification) (*fcm.Message, error) {
 	notification := &fcm.Message{
 		To:                    req.To,
 		Condition:             req.Condition,
@@ -100,7 +101,15 @@ func GetAndroidNotification(req PushNotification) *fcm.Message {
 		notification.Apns = req.Apns
 	}
 
-	return notification
+	jsonMarshall, err := json.Marshal(notification)
+	if err != nil {
+		LogError.Error("Failed to marshal the default message! Error is " + err.Error())
+		return nil, err
+	}
+
+	LogAccess.Debugf("Default message is %s", string(jsonMarshall))
+
+	return notification, nil
 }
 
 // PushToAndroid provide send notification to Android server.
@@ -125,7 +134,7 @@ func PushToAndroid(req PushNotification) {
 	}
 
 Retry:
-	notification := GetAndroidNotification(req)
+	notification, _ := GetAndroidNotification(req)
 
 	if req.APIKey != "" {
 		client, err = InitFCMClient(req.APIKey)

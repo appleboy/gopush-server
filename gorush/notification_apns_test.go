@@ -84,7 +84,7 @@ func TestIOSNotificationStructure(t *testing.T) {
 		URLArgs:  []string{"a", "b"},
 	}
 
-	notification := GetIOSNotification(req)
+	notification, _ := GetIOSNotification(req)
 
 	dump, _ := json.Marshal(notification.Payload)
 	data := []byte(string(dump))
@@ -140,7 +140,7 @@ func TestIOSSoundAndVolume(t *testing.T) {
 		},
 	}
 
-	notification := GetIOSNotification(req)
+	notification, _ := GetIOSNotification(req)
 
 	dump, _ := json.Marshal(notification.Payload)
 	data := []byte(string(dump))
@@ -164,7 +164,7 @@ func TestIOSSoundAndVolume(t *testing.T) {
 
 	req.SoundName = "foobar"
 	req.SoundVolume = 5.5
-	notification = GetIOSNotification(req)
+	notification, _ = GetIOSNotification(req)
 	dump, _ = json.Marshal(notification.Payload)
 	data = []byte(string(dump))
 
@@ -191,7 +191,7 @@ func TestIOSSoundAndVolume(t *testing.T) {
 		},
 	}
 
-	notification = GetIOSNotification(req)
+	notification, _ = GetIOSNotification(req)
 	dump, _ = json.Marshal(notification.Payload)
 	data = []byte(string(dump))
 
@@ -214,7 +214,7 @@ func TestIOSSoundAndVolume(t *testing.T) {
 		Sound:    "default",
 	}
 
-	notification = GetIOSNotification(req)
+	notification, _ = GetIOSNotification(req)
 	dump, _ = json.Marshal(notification.Payload)
 	data = []byte(string(dump))
 
@@ -242,7 +242,7 @@ func TestIOSSummaryArg(t *testing.T) {
 		},
 	}
 
-	notification := GetIOSNotification(req)
+	notification, _ := GetIOSNotification(req)
 
 	dump, _ := json.Marshal(notification.Payload)
 	data := []byte(string(dump))
@@ -276,7 +276,7 @@ func TestSendZeroValueForBadgeKey(t *testing.T) {
 		ThreadID:         test,
 	}
 
-	notification := GetIOSNotification(req)
+	notification, _ := GetIOSNotification(req)
 
 	dump, _ := json.Marshal(notification.Payload)
 	data := []byte(string(dump))
@@ -311,7 +311,7 @@ func TestSendZeroValueForBadgeKey(t *testing.T) {
 	expectBadge := 10
 	req.Badge = &expectBadge
 
-	notification = GetIOSNotification(req)
+	notification, _ = GetIOSNotification(req)
 
 	dump, _ = json.Marshal(notification.Payload)
 	data = []byte(string(dump))
@@ -346,7 +346,7 @@ func TestCheckSilentNotification(t *testing.T) {
 		ContentAvailable: true,
 	}
 
-	notification := GetIOSNotification(req)
+	notification, _ := GetIOSNotification(req)
 
 	dump, _ := json.Marshal(notification.Payload)
 	data := []byte(string(dump))
@@ -396,7 +396,7 @@ func TestAlertStringExample2ForIos(t *testing.T) {
 		},
 	}
 
-	notification := GetIOSNotification(req)
+	notification, _ := GetIOSNotification(req)
 
 	dump, _ := json.Marshal(notification.Payload)
 	data := []byte(string(dump))
@@ -438,7 +438,7 @@ func TestAlertStringExample3ForIos(t *testing.T) {
 		Sound:            sound,
 	}
 
-	notification := GetIOSNotification(req)
+	notification, _ := GetIOSNotification(req)
 
 	dump, _ := json.Marshal(notification.Payload)
 	data := []byte(string(dump))
@@ -468,7 +468,7 @@ func TestMessageAndTitle(t *testing.T) {
 		ContentAvailable: true,
 	}
 
-	notification := GetIOSNotification(req)
+	notification, _ := GetIOSNotification(req)
 
 	dump, _ := json.Marshal(notification.Payload)
 	data := []byte(string(dump))
@@ -492,7 +492,7 @@ func TestMessageAndTitle(t *testing.T) {
 	messageOverride := "Welcome notification Server overridden"
 	req.Alert.Body = messageOverride
 
-	notification = GetIOSNotification(req)
+	notification, _ = GetIOSNotification(req)
 
 	dump, _ = json.Marshal(notification.Payload)
 	data = []byte(string(dump))
@@ -529,7 +529,7 @@ func TestIOSAlertNotificationStructure(t *testing.T) {
 		},
 	}
 
-	notification := GetIOSNotification(req)
+	notification, _ := GetIOSNotification(req)
 
 	dump, _ := json.Marshal(notification.Payload)
 	data := []byte(string(dump))
